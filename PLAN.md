@@ -2,7 +2,7 @@
 
 - 모듈 id: `gatos-visual-novel` / 제목: **Gato's Visual Novel** / 폴더: `modules/gatos-visual-novel`
 - 필수 의존: `gatos-chat-tools` (v0.2.0 이상 — §9의 확장 지점이 추가된 버전)
-- 호환: Foundry VTT **v13 (13.351 기준 개발) · v14 (14.359+ 안정판)** — `compatibility: { minimum: "13", verified: "14" }`
+- 호환: Foundry VTT **v14 (14.369 기준 이식)** — v13용은 v13 설치본에 별도 유지. `compatibility: { minimum: "14", verified: "14" }`
 - 시스템 무관. jQuery·AppV1 사용 금지, `foundry.applications.*` 네임스페이스만 사용.
 - 구현 담당: Claude Opus 5.5. 이 문서는 구현 사양서이며, 각 §의 "구현 메모"가 코드 수준 결정을 담는다.
 - 작성일: 2026-10-21

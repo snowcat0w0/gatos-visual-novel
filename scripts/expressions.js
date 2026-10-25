@@ -212,7 +212,7 @@ export function freezeExpression(message, data, options, userId) {
 
   const flag = expressionFlagFor(speaker, expressionId);
   if (flag) update[`flags.${MODULE_ID}.expression`] = flag;
-  if (override !== undefined) update[`flags.${MODULE_ID}.-=expressionOverride`] = null;
+  if (override !== undefined) update[`flags.${MODULE_ID}.expressionOverride`] = _del;
   if (!foundry.utils.isEmpty(update)) message.updateSource(update);
 }
 
@@ -224,11 +224,7 @@ export function onPreUpdateChatMessage(message, changes, options, userId) {
   const after = foundry.utils.mergeObject(foundry.utils.deepClone(before), changes.speaker, { inplace: false });
   if (before.actor === after.actor && before.token === after.token && before.scene === after.scene) return;
   const flag = expressionFlagFor(after, DEFAULT_EXPRESSION);
-  foundry.utils.setProperty(changes, `flags.${MODULE_ID}.expression`, flag);
-  if (!flag) {
-    delete changes.flags[MODULE_ID].expression;
-    changes.flags[MODULE_ID]["-=expression"] = null;
-  }
+  foundry.utils.setProperty(changes, `flags.${MODULE_ID}.expression`, flag ?? _del);
 }
 
 /** chat-tools portrait provider: the frozen face (with the expression name as label, except for the default). */

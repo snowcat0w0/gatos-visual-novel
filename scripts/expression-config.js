@@ -296,10 +296,10 @@ export function registerExpressionConfigHooks() {
   // Actor directory context menu.
   Hooks.on(ACTOR_CONTEXT_HOOK, (app, options) => {
     options.push({
-      name: "GVN.Config.Open",
-      icon: '<i class="fa-solid fa-masks-theater"></i>',
-      condition: (li) => canEdit(game.actors.get(li.dataset.entryId)),
-      callback: (li) => openExpressionConfig(game.actors.get(li.dataset.entryId)),
+      label: "GVN.Config.Open",
+      icon: "fa-solid fa-masks-theater",
+      visible: (li) => canEdit(game.actors.get(li.dataset.entryId)),
+      onClick: (event, li) => openExpressionConfig(game.actors.get(li.dataset.entryId)),
     });
   });
   Hooks.on("updateActor", (actor, changes) => {

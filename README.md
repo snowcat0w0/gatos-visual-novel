@@ -1,6 +1,6 @@
 # Gato's Visual Novel
 
-Foundry VTT v13용, 시스템 무관 비주얼 노벨 연출 모듈입니다. **Gato's Chat Tools 0.2.0 이상**과 **gatos-lib**(0.4.0부터; 설치만 되고 비활성이면 ready에서 경고)이 필요합니다. 기능·API·설정 키·lang 키·플래그·아카이브 형식은 0.3.0과 같습니다.
+Foundry VTT v14용, 시스템 무관 비주얼 노벨 연출 모듈입니다. **Gato's Chat Tools 0.2.0 이상**과 **gatos-lib**(0.4.0부터; 설치만 되고 비활성이면 ready에서 경고)이 필요합니다. 기능·API·설정 키·lang 키·플래그·아카이브 형식은 0.3.0과 같습니다.
 설계 문서는 [PLAN.md](PLAN.md)에 있습니다.
 
 ## 기능
@@ -114,6 +114,6 @@ Foundry VTT v13용, 시스템 무관 비주얼 노벨 연출 모듈입니다. **
 
 ## 참고
 - 노벨창은 `#interface` 안에서 캔버스 위·UI 아래(z-index 1)에 깔리므로 창·사이드바·핫바·토큰 HUD가 가려지지 않습니다. 비슷한 모듈(theatre, lichsoma-speaker-stage, cinematic-cut-ins)과 함께 켜면 겹칠 수 있습니다.
-- v14는 아직 실측하지 않았습니다(`compatibility.verified: 13`). 버전 의존 코드는 `scripts/compat.js`에 모았습니다.
+- Foundry v14 전용입니다(v13은 v13 설치본의 0.4.0을 쓰세요). v14 실기 테스트는 아직입니다. 버전 의존 코드는 `scripts/compat.js`(gatos-lib)에 모았습니다.
 - 같은 폴더에 여러 번 내보내도 회차마다 `*.log.json`·`*.player.html`이 따로 남습니다(chat-tools 0.3.1부터).
 - 월드 안 재생은 다른 사용자와 동기화되지 않습니다(각자 봄).

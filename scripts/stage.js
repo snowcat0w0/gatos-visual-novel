@@ -341,12 +341,12 @@ export function refreshToggleButtons() {
 function menuItems() {
   const gm = () => game.user.isGM;
   return [
-    { name: "GVN.Stage.MenuAllOn", icon: '<i class="fa-solid fa-eye"></i>', condition: gm, callback: () => broadcastStage(true) },
-    { name: "GVN.Stage.MenuAllOff", icon: '<i class="fa-solid fa-eye-slash"></i>', condition: gm, callback: () => broadcastStage(false) },
-    { name: "GVN.Stage.MenuClearAll", icon: '<i class="fa-solid fa-broom"></i>', condition: gm, callback: () => clearAll() },
-    { name: "GVN.Stage.MenuRebuild", icon: '<i class="fa-solid fa-rotate"></i>', callback: () => rebuild() },
-    { name: "GVN.Player.Open", icon: '<i class="fa-solid fa-film"></i>', callback: () => openLogPlayer() },
-    { name: "GVN.Keywords.Title", icon: '<i class="fa-solid fa-link"></i>', callback: () => openKeywordManager() },
+    { label: "GVN.Stage.MenuAllOn", icon: "fa-solid fa-eye", visible: gm, onClick: () => broadcastStage(true) },
+    { label: "GVN.Stage.MenuAllOff", icon: "fa-solid fa-eye-slash", visible: gm, onClick: () => broadcastStage(false) },
+    { label: "GVN.Stage.MenuClearAll", icon: "fa-solid fa-broom", visible: gm, onClick: () => clearAll() },
+    { label: "GVN.Stage.MenuRebuild", icon: "fa-solid fa-rotate", onClick: () => rebuild() },
+    { label: "GVN.Player.Open", icon: "fa-solid fa-film", onClick: () => openLogPlayer() },
+    { label: "GVN.Keywords.Title", icon: "fa-solid fa-link", onClick: () => openKeywordManager() },
   ];
 }
 
