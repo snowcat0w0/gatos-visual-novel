@@ -1,0 +1,21 @@
+{
+  "id": "gatos-visual-novel",
+  "title": "Gato's Visual Novel",
+  "description": "액터별 표정/스탠딩 이미지와 비주얼 노벨식 노벨창(대사창·스탠딩 최대 6명), 키워드 문서 링크와 참조 이미지, 아카이브·내보내기 연동. Gato's Chat Tools 필요. 시스템 무관.",
+  "version": "0.4.0",
+  "authors": [{ "name": "jesun" }],
+  "compatibility": { "minimum": "13", "verified": "13" },
+  "relationships": {
+    "requires": [
+      { "id": "gatos-lib", "type": "module", "compatibility": { "minimum": "1.0.0-alpha.1" } },
+      { "id": "gatos-chat-tools", "type": "module", "compatibility": { "minimum": "0.2.0" } }
+    ]
+  },
+  "esmodules": ["scripts/module.js"],
+  "styles": ["styles/visual-novel.css"],
+  "languages": [
+    { "lang": "ko", "name": "한국어", "path": "lang/ko.json" },
+    { "lang": "en", "name": "English", "path": "lang/en.json" }
+  ],
+  "socket": true
+}

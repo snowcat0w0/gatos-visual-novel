@@ -1,0 +1,102 @@
+import { MODULE_ID, mod } from "./constants.js";
+import { applyEnabled, applyDisplaySettings, setMaxSlots, rebuild, refreshToggleButtons, clearLocal } from "./stage.js";
+import { refreshPickers } from "./expression-picker.js";
+import { onKeywordsChanged } from "./keyword-manager.js";
+import { DisplaySettingsConfig } from "./display-config.js";
+
+/**
+ * gatos-lib settings table (same keys, order, scopes, types, defaults, choices and onChange as 0.3.0).
+ * Lang keys default to `GVN.Settings.<PascalKey>.Name` / `.Hint`; `typewriterMs` keeps its `Typewriter` keys.
+ * Hidden entries (`displayOverrides`, `keywords`, `stageClearedAt`) are `config: false` without name/hint;
+ * the display menu is registered in the same place as before (between `displayOverrides` and `showRefInStage`).
+ */
+export function registerSettings() {
+  mod.registerSettings({
+    // ---- Stage visibility
+    stageEnabled: { scope: "client", type: Boolean, default: true, onChange: () => applyEnabled() },
+    playersCanToggle: { scope: "world", type: Boolean, default: true, onChange: () => refreshToggleButtons() },
+    hideInCombat: { scope: "client", type: Boolean, default: false, onChange: () => applyEnabled() },
+
+    // ---- Stage layout
+    maxSlots: { scope: "world", type: Number, default: 6, range: { min: 1, max: 6, step: 1 }, onChange: (v) => setMaxSlots(v) },
+
+    // ---- Display: world defaults set by the GM; each user may override single keys (see display()).
+    standLayout: {
+      scope: "world", type: String,
+      choices: { spread: "GVN.Settings.StandLayout.Spread", fixed: "GVN.Settings.StandLayout.Fixed" },
+      default: "spread", onChange: () => applyDisplaySettings(),
+    },
+    standHeight: { scope: "world", type: Number, default: 85, range: { min: 40, max: 100, step: 5 }, onChange: () => applyDisplaySettings() },
+    dimStyle: {
+      scope: "world", type: String,
+      choices: { grayscale: "GVN.Settings.DimStyle.Grayscale", darken: "GVN.Settings.DimStyle.Darken", none: "GVN.Settings.DimStyle.None" },
+      default: "grayscale", onChange: () => applyDisplaySettings(),
+    },
+    dialogueOpacity: { scope: "world", type: Number, default: 0.8, range: { min: 0.2, max: 1, step: 0.05 }, onChange: () => applyDisplaySettings() },
+    dialogueFontSize: { scope: "world", type: Number, default: 18, range: { min: 12, max: 32, step: 1 }, onChange: () => applyDisplaySettings() },
+    typewriterMs: { scope: "world", type: Number, default: 0, range: { min: 0, max: 100, step: 5 }, nameKey: "GVN.Settings.Typewriter.Name", hintKey: "GVN.Settings.Typewriter.Hint" },
+    // This user's overrides of the display defaults: { [key]: value } — only keys the user changed.
+    displayOverrides: { hidden: true, scope: "client", type: Object, default: {}, onChange: () => applyDisplaySettings() },
+    displayMenu: { menu: { icon: "fa-solid fa-display", type: DisplaySettingsConfig, restricted: false } },
+    showRefInStage: { scope: "client", type: Boolean, default: true, onChange: () => applyDisplaySettings() },
+
+    // ---- What reaches the stage
+    oocMode: {
+      scope: "client", type: String,
+      choices: { gmNarration: "GVN.Settings.OocMode.GmNarration", narration: "GVN.Settings.OocMode.Narration", ignore: "GVN.Settings.OocMode.Ignore" },
+      default: "gmNarration", onChange: () => rebuild(),
+    },
+    rollMode: {
+      scope: "client", type: String,
+      choices: { ignore: "GVN.Settings.RollMode.Ignore", narration: "GVN.Settings.RollMode.Narration" },
+      default: "ignore", onChange: () => rebuild(),
+    },
+    rebuildCount: { scope: "client", type: Number, default: 40, range: { min: 0, max: 200, step: 10 } },
+    idleMinutes: { scope: "world", type: Number, default: 0, range: { min: 0, max: 120, step: 5 } },
+
+    // ---- Expressions
+    pickerMode: {
+      scope: "client", type: String,
+      choices: { thumbnails: "GVN.Settings.PickerMode.Thumbnails", names: "GVN.Settings.PickerMode.Names", dropdown: "GVN.Settings.PickerMode.Dropdown" },
+      default: "thumbnails", onChange: () => refreshPickers(),
+    },
+    inlineTag: { scope: "world", type: Boolean, default: true },
+    inlineTagSticky: { scope: "client", type: Boolean, default: false },
+
+    // ---- Links & export
+    linkPermission: {
+      scope: "world", type: String,
+      choices: { LIMITED: "GVN.Settings.LinkPermission.Limited", OBSERVER: "GVN.Settings.LinkPermission.Observer", OWNER: "GVN.Settings.LinkPermission.Owner" },
+      default: "OBSERVER",
+    },
+    exportStands: { scope: "world", type: Boolean, default: true },
+
+    // Keyword registry: { list: [{ keyword, uuid, addedBy }] }
+    keywords: { hidden: true, scope: "world", type: Object, default: { list: [] }, onChange: () => onKeywordsChanged() },
+    // When the GM last emptied every stage; rebuilds ignore older messages.
+    stageClearedAt: { hidden: true, scope: "world", type: Number, default: 0, onChange: () => clearLocal() },
+  });
+}
+
+export const setting = (key) => game.settings.get(MODULE_ID, key);
+
+/** Display settings: world defaults (GM) that each user may override key by key. */
+export const DISPLAY_KEYS = ["standLayout", "standHeight", "dimStyle", "dialogueOpacity", "dialogueFontSize", "typewriterMs"];
+
+/** This user's overrides ({ key: value } for overridden keys only). */
+export function displayOverrides() {
+  const o = setting("displayOverrides");
+  return o && typeof o === "object" ? { ...o } : {};
+}
+
+/** Effective display value: this user's override when set, otherwise the GM's world default. */
+export function display(key) {
+  const o = displayOverrides();
+  return Object.hasOwn(o, key) ? o[key] : setting(key);
+}
+
+/** Replace this user's overrides (keys outside DISPLAY_KEYS are dropped). */
+export async function setDisplayOverrides(overrides) {
+  const clean = Object.fromEntries(Object.entries(overrides ?? {}).filter(([k, v]) => DISPLAY_KEYS.includes(k) && v !== undefined && v !== null));
+  return game.settings.set(MODULE_ID, "displayOverrides", clean);
+}

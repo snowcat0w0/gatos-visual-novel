@@ -1,0 +1,27 @@
+<div class="gvn-dc-root">
+<div class="gvn-dc">
+  <p class="hint">{{localize "GVN.Display.Intro"}}{{#if isGM}} {{localize "GVN.Display.IntroGM"}}{{/if}}</p>
+  {{#each rows}}
+  <div class="gvn-dc-row form-group{{#if own}} own{{/if}}" data-key="{{key}}">
+    <label>{{name}}</label>
+    <div class="form-fields">
+      {{#if isChoice}}
+      <select class="gvn-dc-control" name="{{key}}">
+        {{#each choices}}<option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>{{/each}}
+      </select>
+      {{else if isRange}}
+      <range-picker class="gvn-dc-control" name="{{key}}" value="{{value}}" min="{{range.min}}" max="{{range.max}}" step="{{range.step}}"></range-picker>
+      {{else}}
+      <input class="gvn-dc-control" type="text" name="{{key}}" value="{{value}}">
+      {{/if}}
+      <label class="gvn-dc-own-label"><input type="checkbox" class="gvn-dc-own"{{#if own}} checked{{/if}}> {{localize "GVN.Display.UseOwn"}}</label>
+    </div>
+    <p class="hint">{{localize "GVN.Display.Default" value=defaultLabel}}</p>
+  </div>
+  {{/each}}
+</div>
+<footer class="form-footer">
+  <button type="button" data-action="resetAll"><i class="fa-solid fa-rotate-left"></i> {{localize "GVN.Display.ResetAll"}}</button>
+  <button type="submit"><i class="fa-solid fa-floppy-disk"></i> {{localize "GVN.Display.Save"}}</button>
+</footer>
+</div>

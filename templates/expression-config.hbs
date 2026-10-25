@@ -1,0 +1,83 @@
+<div class="gvn-ec-root">
+<div class="gvn-ec">
+  <aside class="gvn-ec-list">
+    <ol class="gvn-entries">
+      {{#each entries}}
+      <li class="gvn-entry{{#if selected}} selected{{/if}}{{#if isDefault}} default{{/if}}" data-id="{{id}}" data-action="select"{{#unless isDefault}} draggable="true"{{/unless}}>
+        {{#if thumb}}<img class="gvn-entry-thumb" src="{{thumb}}" alt="">{{else}}<span class="gvn-entry-thumb empty"><i class="fa-solid fa-image"></i></span>{{/if}}
+        <span class="gvn-entry-name">{{label}}</span>
+        {{#if isDefault}}
+        <i class="fa-solid fa-lock gvn-entry-lock" data-tooltip="{{localize 'GVN.Config.DefaultLocked'}}"></i>
+        {{else}}
+        <span class="gvn-entry-move">
+          <a data-action="moveUp" class="{{#unless canUp}}disabled{{/unless}}" data-tooltip="{{localize 'GVN.Config.MoveUp'}}"><i class="fa-solid fa-caret-up"></i></a>
+          <a data-action="moveDown" class="{{#unless canDown}}disabled{{/unless}}" data-tooltip="{{localize 'GVN.Config.MoveDown'}}"><i class="fa-solid fa-caret-down"></i></a>
+        </span>
+        {{/if}}
+      </li>
+      {{/each}}
+    </ol>
+    <button type="button" class="gvn-ec-add" data-action="add"><i class="fa-solid fa-plus"></i> {{localize "GVN.Config.Add"}}</button>
+  </aside>
+
+  <section class="gvn-ec-edit">
+    <div class="form-group">
+      <label>{{localize "GVN.Config.Name"}}</label>
+      <div class="form-fields">
+        <input type="text" name="name" value="{{sel.label}}"{{#if sel.isDefault}} disabled{{/if}}>
+      </div>
+      {{#if sel.isDefault}}<p class="hint">{{localize "GVN.Config.DefaultHint"}}</p>{{/if}}
+    </div>
+    <div class="form-group">
+      <label>{{localize "GVN.Config.Face"}}</label>
+      <div class="form-fields">
+        <file-picker name="face" type="image" value="{{sel.face}}"></file-picker>
+        <button type="button" class="icon" data-action="clearImage" data-field="face" data-tooltip="{{localize 'GVN.Config.Clear'}}"><i class="fa-solid fa-eraser"></i></button>
+      </div>
+      <p class="hint">{{localize "GVN.Config.FaceHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GVN.Config.Stand"}}</label>
+      <div class="form-fields">
+        <file-picker name="stand" type="image" value="{{sel.stand}}"></file-picker>
+        <button type="button" class="icon" data-action="clearImage" data-field="stand" data-tooltip="{{localize 'GVN.Config.Clear'}}"><i class="fa-solid fa-eraser"></i></button>
+      </div>
+      <p class="hint">{{localize "GVN.Config.StandHint"}}</p>
+    </div>
+
+    <div class="gvn-ec-preview">
+      <figure class="gvn-ec-face">
+        {{#if preview.face}}<img src="{{preview.face}}" alt="">{{else}}<span class="empty"><i class="fa-solid fa-ban"></i></span>{{/if}}
+        <figcaption>{{localize "GVN.Config.PreviewCard"}}<br><small>{{preview.faceSource}}</small></figcaption>
+      </figure>
+      <figure class="gvn-ec-stand">
+        <div class="gvn-ec-stand-frame">
+          {{#if preview.stand}}<img src="{{preview.stand}}" alt="" style="height: calc(100% * {{stand.scale}}); margin-bottom: {{stand.offsetY}}%;">{{else}}<span class="empty"><i class="fa-solid fa-ban"></i></span>{{/if}}
+        </div>
+        <figcaption>{{localize "GVN.Config.PreviewStage"}}<br><small>{{preview.standSource}}</small></figcaption>
+      </figure>
+    </div>
+
+    {{#unless sel.isDefault}}
+    <button type="button" class="gvn-ec-remove" data-action="remove" data-id="{{sel.id}}"><i class="fa-solid fa-trash"></i> {{localize "GVN.Config.Remove"}}</button>
+    {{/unless}}
+
+    <fieldset class="gvn-ec-standstyle">
+      <legend>{{localize "GVN.Config.StandStyle"}}</legend>
+      <div class="form-group">
+        <label>{{localize "GVN.Config.Scale"}}</label>
+        <div class="form-fields"><range-picker name="scale" value="{{stand.scale}}" min="0.5" max="2" step="0.05"></range-picker></div>
+      </div>
+      <div class="form-group">
+        <label>{{localize "GVN.Config.OffsetY"}}</label>
+        <div class="form-fields"><range-picker name="offsetY" value="{{stand.offsetY}}" min="-50" max="50" step="1"></range-picker></div>
+      </div>
+    </fieldset>
+  </section>
+</div>
+<footer class="form-footer">
+  {{#if dirty}}<span class="gvn-ec-dirty"><i class="fa-solid fa-circle-exclamation"></i> {{localize "GVN.Config.Unsaved"}}</span>{{/if}}
+  <button type="button" data-action="reset"><i class="fa-solid fa-rotate-left"></i> {{localize "GVN.Config.Reset"}}</button>
+  <button type="submit"><i class="fa-solid fa-floppy-disk"></i> {{localize "GVN.Config.Save"}}</button>
+</footer>
+</div>

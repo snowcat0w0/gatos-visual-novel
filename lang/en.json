@@ -1,0 +1,318 @@
+{
+  "GVN": {
+    "ChatToolsMissing": "Gato's Visual Novel: Gato's Chat Tools 0.2.0 or newer is not active, so card portraits, the speaker bar and archive integration are disabled.",
+    "Expression": {
+      "Default": "Default"
+    },
+    "Source": {
+      "Face": "this entry's face",
+      "Stand": "this entry's standing image",
+      "DefaultFace": "default entry's face",
+      "DefaultStand": "default entry's standing image",
+      "Token": "token image",
+      "Actor": "actor image",
+      "None": "none"
+    },
+    "Config": {
+      "Title": "Expressions: {name}",
+      "Open": "Expressions / Standing",
+      "OpenShort": "Expressions",
+      "Add": "Add expression",
+      "Remove": "Delete this expression",
+      "Name": "Name",
+      "Unnamed": "(unnamed)",
+      "NewName": "Expression {n}",
+      "DefaultLocked": "The default entry cannot be deleted or moved",
+      "DefaultHint": "The default entry cannot be renamed or deleted. Leave its images empty to use the token/actor image.",
+      "Face": "Face (chat card)",
+      "FaceHint": "Chat card portrait. When empty: this entry's standing image → default face → token → actor image.",
+      "Stand": "Standing (stage)",
+      "StandHint": "Tall illustration for the stage. When empty: this entry's face → default standing image → token → actor image.",
+      "Clear": "Clear",
+      "PreviewCard": "Chat card",
+      "PreviewStage": "Stage",
+      "StandStyle": "Standing adjustment (whole actor)",
+      "Scale": "Scale",
+      "OffsetY": "Vertical offset (%)",
+      "MoveUp": "Move up",
+      "MoveDown": "Move down",
+      "Unsaved": "Unsaved changes",
+      "Reset": "Revert",
+      "Save": "Save",
+      "Saved": "Saved the expressions of {name}.",
+      "NoPermission": "You may not edit this actor's expressions.",
+      "ErrEmptyName": "An expression has an empty name.",
+      "ErrDuplicate": "Two expressions have the same name."
+    },
+    "Stage": {
+      "Toggle": "Toggle novel stage",
+      "ToggleOn": "Show novel stage (right-click: menu)",
+      "ToggleOff": "Hide novel stage (right-click: menu)",
+      "ToggleLocked": "The GM has locked the novel stage toggle.",
+      "Close": "Hide novel stage",
+      "Collapse": "Collapse dialogue",
+      "Expand": "Expand dialogue",
+      "ClearAll": "Clear everyone's stage",
+      "MenuAllOn": "Show stage for everyone",
+      "MenuAllOff": "Hide stage for everyone",
+      "MenuClearAll": "Clear everyone's stage",
+      "MenuRebuild": "Rebuild stage",
+      "BroadcastOn": "Turned the novel stage on for all users.",
+      "BroadcastOff": "Turned the novel stage off for all users.",
+      "ForcedOn": "The GM turned the novel stage on.",
+      "ForcedOff": "The GM turned the novel stage off. Use the mask button in the chat controls to show it again.",
+      "GMOnly": "Only a GM can do this."
+    },
+    "Link": {
+      "NotFound": "Could not link: {keywords} (no such document or not enough permission)",
+      "Missing": "Document \"{name}\" not found.",
+      "NoPermission": "You may not view \"{name}\".",
+      "NoPermissionCreate": "You may not link to this document.",
+      "Locked": "No permission to view"
+    },
+    "Keywords": {
+      "Title": "Keyword registry",
+      "SyntaxExample": "Write {open}keyword{close} or {open}keyword|label{close} in chat to link a document. Keywords not in the registry are looked up by actor, item, journal or journal page name (or journal/page).",
+      "Keyword": "Keyword",
+      "UuidPlaceholder": "Document UUID (or drop a document here)",
+      "DropHint": "Drop an actor, item, journal or journal page onto this window to fill in its UUID.",
+      "Search": "Search",
+      "Add": "Add",
+      "Added": "Added keyword \"{keyword}\".",
+      "Remove": "Delete",
+      "Empty": "No keywords yet.",
+      "Missing": "(deleted document)",
+      "GMRequired": "This must be handled by a GM client.",
+      "NoGM": "No GM is connected, so keywords cannot be changed.",
+      "Timeout": "The GM did not answer. Try again later.",
+      "ErrInvalid": "Enter both a keyword and a document.",
+      "ErrChars": "Keywords may not contain {, } or |.",
+      "ErrNoDoc": "No document with that UUID.",
+      "ErrType": "Only actors, items, journals and journal pages can be registered.",
+      "ErrDuplicate": "That keyword already exists.",
+      "ErrMissing": "That keyword is not registered.",
+      "ErrNotOwner": "You can only delete keywords you added."
+    },
+    "Player": {
+      "Open": "Replay a log…",
+      "Title": "Log player",
+      "Source": "Log to replay",
+      "Autoplay": "Autoplay",
+      "Hint": "Replay the current chat log or a saved archive on the novel stage. Only you see the replay; other users are not affected. The live stage keeps updating in the background.",
+      "Play": "Play",
+      "Cancel": "Cancel",
+      "LiveLog": "Current chat log",
+      "Loading": "Loading {count} messages…",
+      "LoadFailed": "Could not load the archive \"{name}\".",
+      "First": "First",
+      "Prev": "Previous",
+      "Pause": "Pause",
+      "Next": "Next",
+      "Last": "Last",
+      "Speed": "Speed",
+      "List": "Message list",
+      "Close": "Stop replay",
+      "Empty": "Nothing to replay.",
+      "Narration": "Narration",
+      "OpenLocal": "Open in the novel player",
+      "AssetsNotReady": "The novel player files were still loading, so this export has no player page. Export again in a moment.",
+      "ViewerAction": "Replay as novel",
+      "ViewerActionHint": "Replay the listed (or selected) messages on the novel stage",
+      "Scene": "Scene"
+    },
+    "Editor": {
+      "Edit": "Edit log",
+      "CloseEditor": "Close editor",
+      "Undo": "Undo",
+      "Redo": "Redo",
+      "Save": "Save",
+      "SaveHint": "Write the edited player and log JSON into the exported folder (Ctrl+S)",
+      "Download": "Download",
+      "DownloadHint": "Download the edited player page and log JSON",
+      "Connect": "Bundle folder…",
+      "ConnectHint": "Open the exported folder to list its images and save in place",
+      "Connected": "Folder: {name}",
+      "Line": "Line",
+      "Kind": "Type",
+      "KindSpeech": "Speech",
+      "KindEmote": "Emote",
+      "KindNarration": "Narration",
+      "KindScene": "Scene cut (background only)",
+      "KindKeep": "Keep as is ({category})",
+      "Speaker": "Speaker",
+      "NoSpeaker": "(none)",
+      "Name": "Display name",
+      "Expression": "Expression",
+      "Stand": "Stand",
+      "Face": "Face",
+      "Background": "Background",
+      "BgInherited": "unchanged (kept from earlier lines)",
+      "BgNone": "none",
+      "BgSet": "Choose…",
+      "BgClear": "No background from this line",
+      "BgKeep": "No change",
+      "ClearStands": "Dismiss every stand before this line",
+      "Change": "Change…",
+      "Remove": "Remove",
+      "Text": "Text",
+      "RawHtml": "Edit as HTML",
+      "Propagate": "Also change the following lines that use the same expression",
+      "InsertBefore": "Insert before",
+      "InsertAfter": "Insert after",
+      "DeleteLine": "Delete line",
+      "MoveUp": "Move up",
+      "MoveDown": "Move down",
+      "PickTitle": "Choose an image",
+      "PickExpression": "Choose an expression",
+      "FromFile": "From file…",
+      "Path": "Path",
+      "Ok": "OK",
+      "Cancel": "Cancel",
+      "GroupExpressions": "This character's expressions",
+      "GroupStands": "Stands",
+      "GroupFaces": "Faces",
+      "GroupBackgrounds": "Backgrounds",
+      "GroupOther": "Other images",
+      "GroupFolder": "Folder: {folder}",
+      "NoImages": "No images to choose from yet. Open the bundle folder or pick a file.",
+      "NewLine": "(new line)",
+      "EditorUser": "Editor",
+      "HiddenLine": "not played",
+      "SceneLine": "Scene",
+      "NarrationLine": "Narration",
+      "DraftFound": "This log has an unsaved draft from {when}.",
+      "DraftLoad": "Load draft",
+      "DraftDiscard": "Discard",
+      "Saved": "Saved {files} in \"{folder}\".",
+      "Downloaded": "Downloaded {file}. Replace the same files in the exported folder.",
+      "WrongFolder": "{file} is not in that folder. Choose the folder the player was exported to.",
+      "FolderUnsupported": "This browser cannot write into folders; the edited page will be downloaded instead.",
+      "Overwrite": "Overwrite {file} in \"{folder}\"?",
+      "Unsaved": "Unsaved changes",
+      "SaveFailed": "Saving failed: {error}",
+      "EmbeddedNote": "{count} new image(s) are embedded in the page because no folder is connected."
+    },
+    "Export": {
+      "BackToLog": "Back to the chat log",
+      "Type": {
+        "Actor": "Actor",
+        "Item": "Item",
+        "JournalEntry": "Journal",
+        "JournalEntryPage": "Journal page"
+      }
+    },
+    "Settings": {
+      "StageEnabled": {
+        "Name": "Show novel stage",
+        "Hint": "Show a visual-novel stage (standing images and a dialogue box) over the canvas. Also toggled by the mask button in the chat controls."
+      },
+      "PlayersCanToggle": {
+        "Name": "Players may toggle the stage",
+        "Hint": "When off, the players' mask button and the dialogue close button are hidden and only the GM's show/hide for everyone applies."
+      },
+      "HideInCombat": {
+        "Name": "Hide during combat",
+        "Hint": "Hide the stage while a combat is running."
+      },
+      "MaxSlots": {
+        "Name": "Standing slots",
+        "Hint": "How many standing images can be on stage at once (1–6). The speaker silent for the longest leaves first."
+      },
+      "StandLayout": {
+        "Name": "Standing layout",
+        "Hint": "Spread: speakers on stage are spaced evenly. Fixed: one fixed column per slot. (Default for all users; each user can override it in 'Novel stage display (personal)'.)",
+        "Spread": "Spread",
+        "Fixed": "Fixed columns"
+      },
+      "StandHeight": {
+        "Name": "Standing height (%)",
+        "Hint": "Height of standing images relative to the stage; multiplied by the actor's scale. (Default for all users; each user can override it in 'Novel stage display (personal)'.)"
+      },
+      "DimStyle": {
+        "Name": "Silent speakers",
+        "Hint": "How standing images other than the current speaker are shown. (Default for all users; each user can override it in 'Novel stage display (personal)'.)",
+        "Grayscale": "Grey",
+        "Darken": "Darkened",
+        "None": "Unchanged"
+      },
+      "DialogueOpacity": {
+        "Name": "Dialogue box opacity",
+        "Hint": "(Default for all users; each user can override it in 'Novel stage display (personal)'.)"
+      },
+      "DialogueFontSize": {
+        "Name": "Dialogue font size (px)",
+        "Hint": "(Default for all users; each user can override it in 'Novel stage display (personal)'.)"
+      },
+      "Typewriter": {
+        "Name": "Typewriter effect (ms per character)",
+        "Hint": "0 shows lines instantly. Click the dialogue box to finish a line. (Default for all users; each user can override it in 'Novel stage display (personal)'.)"
+      },
+      "ShowRefInStage": {
+        "Name": "Show reference images",
+        "Hint": "For messages with keyword links, show the linked document's image/text in the middle of the stage."
+      },
+      "OocMode": {
+        "Name": "OOC messages",
+        "Hint": "How messages sent without a speaker (OOC) reach the stage.",
+        "GmNarration": "GM's OOC as narration",
+        "Narration": "All as narration",
+        "Ignore": "Ignore"
+      },
+      "RollMode": {
+        "Name": "Roll messages",
+        "Hint": "How dice roll messages reach the stage.",
+        "Ignore": "Ignore",
+        "Narration": "Flavor and total as narration"
+      },
+      "RebuildCount": {
+        "Name": "Messages used to restore the stage",
+        "Hint": "How many recent messages rebuild the stage when you join or rebuild it."
+      },
+      "IdleMinutes": {
+        "Name": "Auto exit (minutes)",
+        "Hint": "Remove standing images of speakers silent for this long. 0 disables."
+      },
+      "PickerMode": {
+        "Name": "Expression picker",
+        "Hint": "Look of the expression row below the speaker bar.",
+        "Thumbnails": "Thumbnails",
+        "Names": "Names",
+        "Dropdown": "Dropdown"
+      },
+      "InlineTag": {
+        "Name": "Inline expression tag",
+        "Hint": "Start a message with an expression name in single braces, like {Smile}, to send just that message with it."
+      },
+      "InlineTagSticky": {
+        "Name": "Inline tag changes current expression",
+        "Hint": "When on, the tagged expression stays selected for later messages."
+      },
+      "LinkPermission": {
+        "Name": "Minimum permission for keyword links",
+        "Hint": "Users need at least this permission on a document to link it, open it from a link or see its reference image. GMs always can.",
+        "Limited": "Limited",
+        "Observer": "Observer",
+        "Owner": "Owner"
+      },
+      "ExportStands": {
+        "Name": "Include standing/face images in exports",
+        "Hint": "Zip/folder exports also contain the standing (stands/) and face (faces/) images used by the messages, for a future log player."
+      },
+      "DisplayMenu": {
+        "Name": "Novel stage display (personal)",
+        "Label": "My display",
+        "Hint": "Standing height, layout, greying, dialogue opacity, font size and typewriter speed follow the GM's defaults. Override only the ones you want here."
+      }
+    },
+    "Display": {
+      "Title": "Novel stage display (personal)",
+      "Intro": "Only ticked rows use your own value. Unticked rows follow the GM's default and update when the GM changes it.",
+      "IntroGM": "Everyone's defaults are set in the module settings; this window changes only your own screen.",
+      "UseOwn": "Use my value",
+      "Default": "GM default: {value}",
+      "ResetAll": "Reset all to GM defaults",
+      "Save": "Save",
+      "Saved": "Saved your novel stage display settings."
+    }
+  }
+}

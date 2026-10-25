@@ -1,0 +1,22 @@
+<div class="gvn-kw">
+  <p class="hint">{{syntax}}</p>
+  <div class="gvn-kw-add">
+    <input type="text" name="keyword" placeholder="{{localize 'GVN.Keywords.Keyword'}}" autocomplete="off">
+    <input type="text" name="uuid" placeholder="{{localize 'GVN.Keywords.UuidPlaceholder'}}" autocomplete="off">
+    <button type="submit"><i class="fa-solid fa-plus"></i> {{localize "GVN.Keywords.Add"}}</button>
+  </div>
+  <p class="hint">{{localize "GVN.Keywords.DropHint"}}</p>
+  <input type="search" name="search" value="{{search}}" placeholder="{{localize 'GVN.Keywords.Search'}}" autocomplete="off">
+  <ol class="gvn-kw-list">
+    {{#each rows}}
+    <li class="gvn-kw-row{{#if missing}} missing{{/if}}" data-keyword="{{keyword}}" data-uuid="{{uuid}}">
+      <span class="gvn-kw-keyword">{{keyword}}</span>
+      <a class="gvn-kw-doc{{#unless canOpen}} disabled{{/unless}}" data-action="open"><i class="fa-solid {{icon}}"></i> {{docName}}</a>
+      <span class="gvn-kw-by">{{addedByName}}</span>
+      {{#if canRemove}}<a class="gvn-kw-remove" data-action="remove" data-tooltip="{{localize 'GVN.Keywords.Remove'}}"><i class="fa-solid fa-trash"></i></a>{{/if}}
+    </li>
+    {{else}}
+    <li class="gvn-kw-empty">{{localize "GVN.Keywords.Empty"}}</li>
+    {{/each}}
+  </ol>
+</div>
