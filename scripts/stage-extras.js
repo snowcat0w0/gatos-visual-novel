@@ -188,10 +188,12 @@ function renderBubble(root, state) {
     fig.append(bubble);
   }
   bubble.textContent = text;
-  // Open towards the middle of the stage.
+  // Open towards the middle of the stage: cast columns know their side (unless moved freely); others go by position.
   const r = root.getBoundingClientRect();
   const f = fig.getBoundingClientRect();
-  const leftHalf = f.left + f.width / 2 < r.left + r.width / 2;
+  const free = fig.classList.contains("gvn-pos");
+  const leftHalf = (!free && fig.classList.contains("gvn-cast-left"))
+    || ((free || !fig.classList.contains("gvn-cast-right")) && f.left + f.width / 2 <= r.left + r.width / 2);
   bubble.classList.toggle("to-right", leftHalf);
   bubble.classList.toggle("to-left", !leftHalf);
   bubble.classList.toggle("emote", !!d.emote);
