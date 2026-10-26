@@ -11,6 +11,10 @@ export const TEMPLATES = {
   expressionConfig: `modules/${MODULE_ID}/templates/expression-config.hbs`,
   keywordManager: `modules/${MODULE_ID}/templates/keyword-manager.hbs`,
   displayConfig: `modules/${MODULE_ID}/templates/display-config.hbs`,
+  castConfig: `modules/${MODULE_ID}/templates/cast-config.hbs`,
+  sceneMedia: `modules/${MODULE_ID}/templates/scene-media.hbs`,
+  itemPalette: `modules/${MODULE_ID}/templates/item-palette.hbs`,
+  npcPalette: `modules/${MODULE_ID}/templates/npc-palette.hbs`,
 };
 
 /** Library handle: `mod.L("Stage.Title")` = `game.i18n.localize("GVN.Stage.Title")`, settings under `GVN.Settings`. */

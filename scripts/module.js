@@ -1,5 +1,5 @@
 import { MODULE_ID, TEMPLATES, L, mod, chatTools, chatToolsHooksAvailable } from "./constants.js";
-import { libActive } from "./lib.js";
+import { libActive, addSceneControlTool } from "./lib.js";
 import { registerSettings } from "./settings.js";
 import * as StageState from "./stage-state.js";
 import * as StageDOM from "./stage-dom.js";
@@ -26,10 +26,42 @@ import {
   openRef,
 } from "./links.js";
 import { openKeywordManager } from "./keyword-manager.js";
-import { registerSocket, broadcastStage, broadcastRemove, clearAll } from "./socket.js";
+import { registerSocket, broadcastStage, broadcastRemove, broadcastFocus, broadcastRelease, clearAll } from "./socket.js";
 import { registerArchiveHooks, preloadPlayerAssets } from "./archive-ext.js";
 import * as PlayerCore from "./player-core.js";
 import { openLogPlayer, playMessages, playSource, loadSource, stopPlayback, isPlaying } from "./log-player.js";
+import {
+  registerCastStatProvider,
+  registerCastItemProvider,
+  registerItemPaletteFilter,
+  castMembers,
+  getPcCast,
+  setPcCast,
+  updatePcSeat,
+  getNpcCast,
+  setNpcSeat,
+  getLayout,
+  saveLayout,
+  resetLayout,
+  giveItemTo,
+} from "./cast.js";
+import { openCastConfig, registerCastConfigHooks } from "./cast-config.js";
+import {
+  registerSceneMediaHooks,
+  openSceneMedia,
+  getMedia,
+  getPresets,
+  applyMedia,
+  clearMedia,
+  syncMediaTiles,
+  savePreset,
+  applyPreset,
+  deletePreset,
+  bakeBlur,
+} from "./scene-media.js";
+import { registerPaletteHooks, openItemPalette, openNpcPalette, toggleNpc } from "./palettes.js";
+import { registerQuickbarHooks, renderQuickbar, toggleQuickbar } from "./quickbar.js";
+import { registerVoiceHighlight, setDirector, toggleDirector, setLayoutEditing, toggleLayoutEditing } from "./stage-extras.js";
 
 Hooks.once("init", () => {
   // Installed-but-disabled library = "half state" (gatos-lib PLAN §5.6): code imports fine, but the library's
@@ -79,6 +111,31 @@ Hooks.once("init", () => {
     StageState,
     StageDOM,
     PlayerCore,
+    // 0.6.0: cast, director tools, scene media, palettes (GM writes; reads work for everyone)
+    cast: {
+      members: castMembers,
+      getPc: getPcCast,
+      setPc: setPcCast,
+      updatePcSeat,
+      getNpc: getNpcCast,
+      setNpcSeat,
+      getLayout,
+      saveLayout,
+      resetLayout,
+      giveItem: giveItemTo,
+      toggleNpc,
+      openConfig: openCastConfig,
+    },
+    focus: (key) => broadcastFocus(key),
+    releaseFocus: () => broadcastRelease(),
+    director: { set: setDirector, toggle: toggleDirector, setLayoutEditing, toggleLayoutEditing },
+    media: { open: openSceneMedia, get: getMedia, presets: getPresets, apply: applyMedia, clear: clearMedia, sync: syncMediaTiles, savePreset, applyPreset, deletePreset, bakeBlur },
+    openItemPalette,
+    openNpcPalette,
+    quickbar: { render: renderQuickbar, toggle: toggleQuickbar },
+    registerCastStatProvider,
+    registerCastItemProvider,
+    registerItemPaletteFilter,
   });
 
   // Message creation, in order: links (content) → [chat-tools speaker lock] → expression freeze.
@@ -93,6 +150,16 @@ Hooks.once("init", () => {
   registerPickerHooks();
   registerStageHooks();
   registerArchiveHooks();
+  registerSceneMediaHooks();
+  registerPaletteHooks();
+  registerCastConfigHooks();
+  registerQuickbarHooks();
+
+  // Scene controls (token layer, GM only): quickbar, scene media, cast. v14 record shape via gatos-lib.
+  const gm = () => !!game.user?.isGM;
+  addSceneControlTool({ layer: "tokens", name: "gvnQuickbar", title: "GVN.Tools.Quickbar", icon: "fa-solid fa-clapperboard", visible: gm, onClick: () => toggleQuickbar() });
+  addSceneControlTool({ layer: "tokens", name: "gvnSceneMedia", title: "GVN.Media.Title", icon: "fa-solid fa-panorama", visible: gm, onClick: () => openSceneMedia() });
+  addSceneControlTool({ layer: "tokens", name: "gvnCast", title: "GVN.Cast.Title", icon: "fa-solid fa-users", visible: gm, onClick: () => openCastConfig() });
 });
 
 Hooks.once("ready", async () => {
@@ -119,5 +186,7 @@ Hooks.once("ready", async () => {
     });
   }
   await startStage();
+  registerVoiceHighlight();
+  renderQuickbar();
   preloadPlayerAssets();
 });

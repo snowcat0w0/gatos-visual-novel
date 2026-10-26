@@ -1,0 +1,40 @@
+<div class="gvn-pal">
+  {{#if scene}}
+  <div class="gvn-pal-seats">
+    <span class="gvn-pal-scene">{{sceneName}}</span>
+    <ol>
+      {{#each seats}}
+      <li class="gvn-pal-seat{{#if name}} taken{{/if}}" data-seat="{{index}}">
+        <span class="gvn-pal-seat-n">{{n}}</span>
+        {{#if img}}<img src="{{img}}" alt="">{{/if}}
+        <span class="gvn-pal-seat-name">{{#if name}}{{name}}{{else}}{{localize "GVN.Cast.Empty"}}{{/if}}</span>
+        {{#if name}}<a data-action="clearSeat" data-tooltip="{{localize 'GVN.Cast.Clear'}}"><i class="fa-solid fa-xmark"></i></a>{{/if}}
+      </li>
+      {{/each}}
+    </ol>
+  </div>
+  {{else}}
+  <p class="hint">{{localize "GVN.Media.NoScene"}}</p>
+  {{/if}}
+  <div class="gvn-pal-filters">
+    <input type="search" name="search" value="{{search}}" placeholder="{{localize 'GVN.Palette.Search'}}" autocomplete="off">
+    <div class="gvn-pal-selects">
+      <select name="folder">
+        <option value="">{{localize "GVN.Palette.AllFolders"}}</option>
+        {{#each folders}}<option value="{{key}}"{{#if selected}} selected{{/if}}>{{label}}</option>{{/each}}
+      </select>
+    </div>
+    <p class="hint">{{localize "GVN.Palette.NpcHint"}}</p>
+  </div>
+  <ol class="gvn-pal-list">
+    {{#each rows}}
+    <li class="gvn-pal-row{{#if inCast}} in-cast{{/if}}" data-actor-id="{{id}}" data-action="toggle">
+      <img class="gvn-pal-img" src="{{img}}" alt="" draggable="false">
+      <span class="gvn-pal-text"><span class="gvn-pal-name">{{name}}</span></span>
+      {{#if inCast}}<span class="gvn-pal-badge">{{localize "GVN.Palette.InSeat" n=seat}}</span>{{/if}}
+    </li>
+    {{else}}
+    <li class="gvn-pal-empty">{{localize "GVN.Palette.Empty"}}</li>
+    {{/each}}
+  </ol>
+</div>

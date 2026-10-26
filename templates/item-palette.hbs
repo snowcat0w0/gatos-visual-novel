@@ -1,0 +1,35 @@
+<div class="gvn-pal">
+  <div class="gvn-pal-filters">
+    <input type="search" name="search" value="{{search}}" placeholder="{{localize 'GVN.Palette.Search'}}" autocomplete="off">
+    <div class="gvn-pal-selects">
+      <select name="source">{{#each sources}}<option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>{{/each}}</select>
+      <select name="folder">
+        <option value="">{{localize "GVN.Palette.AllFolders"}}</option>
+        {{#each folders}}
+        <optgroup label="{{label}}">
+          {{#each options}}<option value="{{key}}"{{#if selected}} selected{{/if}}>{{label}}</option>{{/each}}
+        </optgroup>
+        {{/each}}
+      </select>
+      <button type="button" class="icon" data-action="reload" data-tooltip="{{localize 'GVN.Palette.Reload'}}"><i class="fa-solid fa-rotate"></i></button>
+    </div>
+    <p class="hint">{{localize "GVN.Palette.ItemHint"}}</p>
+  </div>
+  {{#if failed}}<p class="gvn-pal-empty">{{localize "GVN.Palette.IndexFailed"}}</p>{{/if}}
+  <ol class="gvn-pal-list">
+    {{#each rows}}
+    <li class="gvn-pal-row" draggable="true" data-uuid="{{uuid}}" data-name="{{name}}">
+      <img class="gvn-pal-img" src="{{img}}" alt="" draggable="false">
+      <span class="gvn-pal-text">
+        <span class="gvn-pal-name">{{name}}</span>
+        <span class="gvn-pal-meta">{{type}} · {{source}}</span>
+      </span>
+      <a class="gvn-pal-fav{{#if fav}} active{{/if}}" data-action="favorite" data-tooltip="{{localize 'GVN.Palette.Favorite'}}"><i class="fa-{{#if fav}}solid{{else}}regular{{/if}} fa-star"></i></a>
+      <a class="gvn-pal-give" data-action="give" data-tooltip="{{localize 'GVN.Palette.Give'}}"><i class="fa-solid fa-gift"></i></a>
+    </li>
+    {{else}}
+    <li class="gvn-pal-empty">{{localize "GVN.Palette.Empty"}}</li>
+    {{/each}}
+  </ol>
+  {{#if more}}<p class="gvn-pal-more">{{localize "GVN.Palette.More" count=more}}</p>{{/if}}
+</div>

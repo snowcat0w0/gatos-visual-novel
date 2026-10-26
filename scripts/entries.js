@@ -1,10 +1,14 @@
 import { MODULE_ID, chatTools } from "./constants.js";
+import { pure } from "./lib.js";
+import { isGctNote } from "./tags.js";
+
+const { stripTooltips } = pure;
 import { setting } from "./settings.js";
 import { expressionFlagFor } from "./expressions.js";
 
 /**
  * Raw category of a message, independent of client preferences:
- * hidden | chitchat | narration | roll | ooc | speech | emote
+ * hidden | note | chitchat | narration | roll | ooc | speech | emote  (note = chat-tools shared note, always ignored)
  * @param {ChatMessage} message
  * @param {object} [opts]
  * @param {boolean} [opts.viewer=true]  Treat messages this client cannot see as hidden.
@@ -13,7 +17,10 @@ export function categorize(message, { viewer = true } = {}) {
   const S = CONST.CHAT_MESSAGE_STYLES;
   const flags = message.flags?.[MODULE_ID] ?? {};
   const speaker = message.speaker ?? {};
-  if (viewer && message.visible === false) return "hidden";
+  // Whispered ROLLS are `visible` to everybody in core (shown as "rolled privately"): use the content visibility,
+  // or the roll totals and flavor of a GM's private roll would reach every stage with rollMode "narration".
+  if (viewer && (message.visible === false || message.isContentVisible === false)) return "hidden";
+  if (isGctNote(message)) return "note";
   if (message.flags?.["gatos-chat-tools"]?.chitchat) return "chitchat";
   if (flags.narration) return "narration";
   if (message.isRoll) return "roll";
@@ -99,15 +106,12 @@ export function describe(message, { viewer = true } = {}) {
   return entry;
 }
 
-function stripTooltips(html) {
-  if (!html || !/dice-tooltip/.test(html)) return html ?? "";
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  div.querySelectorAll(".dice-tooltip").forEach((e) => e.remove());
-  return div.innerHTML;
-}
-
-/** Rendered `.message-content` HTML for the dialogue box. */
+/**
+ * Rendered `.message-content` HTML for the dialogue box. Markup is kept as rendered (sanitized by the server and
+ * the renderer): chat-tools font-style spans (`<span class="gct-fs" style="…">`) and ruby survive, and the
+ * typewriter types text node by text node so the styling stays while a line is typed out.
+ * gatos-lib stripTooltips parses with DOMParser (inert: no image loads or handlers).
+ */
 export async function dialogueHtml(message) {
   if (message.isRoll && categorize(message) === "roll") {
     const totals = message.rolls.map((r) => `<strong class="gvn-roll-total">${r.total}</strong>`).join(" ");

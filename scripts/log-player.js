@@ -1,11 +1,13 @@
 import { CHAT_TOOLS_ID, L, mod, chatTools } from "./constants.js";
 import { esc, formDialog, readForm } from "./lib.js";
 import { enterPlayback, exitPlayback, isPlaying } from "./stage.js";
+import { isGctNote } from "./tags.js";
 
 const LIVE = "__live__";
 
 /** Same rule as the chat-tools viewer: players do not see others' whispers / blind rolls in archives. */
 function visibleArchived(m) {
+  if (isGctNote(m)) return false;
   if (game.user.isGM) return true;
   let hide = true;
   try {
@@ -22,7 +24,9 @@ function visibleArchived(m) {
 /** Serialize the current chat log (only what this user can see). */
 async function serializeLive() {
   const ct = chatTools();
-  const docs = game.messages.contents.filter((m) => m.visible).sort((a, b) => a.timestamp - b.timestamp);
+  // chat-tools shared notes are table notes, not part of the story.
+  // isContentVisible: whispered ROLLS are `visible` to everybody, but their totals are not for this user.
+  const docs = game.messages.contents.filter((m) => m.visible && m.isContentVisible !== false && !isGctNote(m)).sort((a, b) => a.timestamp - b.timestamp);
   const progress = ui.notifications.info(L("Player.Loading", { count: docs.length }), { progress: true });
   const out = [];
   for (let i = 0; i < docs.length; i++) {

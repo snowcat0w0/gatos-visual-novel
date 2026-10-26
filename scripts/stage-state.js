@@ -14,6 +14,13 @@
  *   standStyle: { scale, offsetY } | null,
  *   refs: [{ uuid, type, name, img, text, href? }]
  * }
+ *
+ * State = { slots, activeKey, focusKey, looks, dialogue, ref, background, seq }
+ *   focusKey   manual speaker focus (GM); shown as the active stand until the next speech line clears it
+ *   looks      { [key]: { stand, standStyle, name } } latest line of each pinned (cast) speaker
+ *
+ * Pinned keys (opts.pinned, the live stage's cast): such speakers are never seated in a slot and never
+ * evicted; their lines still make them the active speaker and record their look. The log player passes none.
  */
 
 export const STATE_VERSION = 1;
@@ -34,11 +41,19 @@ export function centerOutOrder(n) {
 
 /** A fresh, empty stage. */
 export function createState(maxSlots = MAX_SLOTS) {
-  return { slots: Array(clampSlots(maxSlots)).fill(null), activeKey: null, dialogue: null, ref: null, background: null, seq: 0 };
+  return { slots: Array(clampSlots(maxSlots)).fill(null), activeKey: null, focusKey: null, looks: {}, dialogue: null, ref: null, background: null, seq: 0 };
 }
 
 function clampSlots(n) {
   return Math.max(1, Math.min(MAX_SLOTS, Math.floor(n) || MAX_SLOTS));
+}
+
+/** Is `key` among the pinned keys (Set, array or { key: true })? */
+export function isPinned(pinned, key) {
+  if (!pinned || !key) return false;
+  if (pinned instanceof Set) return pinned.has(key);
+  if (Array.isArray(pinned)) return pinned.includes(key);
+  return !!pinned[key];
 }
 
 function placeIn(slots, slot, order) {
@@ -73,8 +88,9 @@ function dialogueOf(entry, named) {
  * @param {object} [opts]
  * @param {number} [opts.maxSlots]
  * @param {number[]} [opts.slotOrder]
+ * @param {Set<string>|string[]} [opts.pinned]  Keys of cast members (never seated, never evicted).
  */
-export function apply(state, entry, { maxSlots, slotOrder } = {}) {
+export function apply(state, entry, { maxSlots, slotOrder, pinned } = {}) {
   if (!entry || entry.kind === "ignore") return state;
   let next = maxSlots && maxSlots !== state.slots.length ? withMaxSlots(state, maxSlots) : state;
   // Editor-only fields (exported logs): dismiss every stand / change the background from this entry on.
@@ -93,8 +109,16 @@ export function apply(state, entry, { maxSlots, slotOrder } = {}) {
 
   // speech
   let slots = next.slots;
+  let looks = next.looks ?? {};
   const at = entry.key ? slots.findIndex((s) => s?.key === entry.key) : -1;
-  if (at >= 0) {
+  if (isPinned(pinned, entry.key)) {
+    // Cast member: stands on its own (cast layer). A seat it held before being cast is freed.
+    if (at >= 0) {
+      slots = slots.slice();
+      slots[at] = null;
+    }
+    if (entry.stand) looks = { ...looks, [entry.key]: { stand: entry.stand, standStyle: entry.standStyle ?? null, name: entry.name ?? null } };
+  } else if (at >= 0) {
     slots = slots.slice();
     slots[at] = {
       ...slots[at],
@@ -117,7 +141,8 @@ export function apply(state, entry, { maxSlots, slotOrder } = {}) {
     };
     slots = placeIn(slots.slice(), slot, order);
   }
-  return { ...next, slots, seq, activeKey: entry.key ?? null, dialogue: dialogueOf(entry, true), ref };
+  // Any new line from a speaker ends a manual focus.
+  return { ...next, slots, looks, seq, activeKey: entry.key ?? null, focusKey: null, dialogue: dialogueOf(entry, true), ref };
 }
 
 /** Apply a list of entries in order. */
@@ -132,8 +157,39 @@ export function remove(state, key) {
     ...state,
     slots: state.slots.map((s) => (s?.key === key ? null : s)),
     activeKey: state.activeKey === key ? null : state.activeKey,
+    focusKey: state.focusKey === key ? null : state.focusKey ?? null,
   };
 }
+
+/** Free the seats of speakers that became pinned (cast members stand on their own). */
+export function withPinned(state, pinned) {
+  if (!state.slots.some((s) => s && isPinned(pinned, s.key))) return state;
+  return { ...state, slots: state.slots.map((s) => (s && isPinned(pinned, s.key) ? null : s)) };
+}
+
+/** Manual focus on a stand (null clears it). The focused stand is shown as the active one. */
+export function setFocus(state, key) {
+  key = key || null;
+  if ((state.focusKey ?? null) === key) return state;
+  return { ...state, focusKey: key };
+}
+
+/** Release every highlight: no manual focus and no active speaker (nobody is dimmed). */
+export function release(state) {
+  if (!state.focusKey && !state.activeKey) return state;
+  return { ...state, focusKey: null, activeKey: null };
+}
+
+/** Forget the recorded look of a pinned speaker (its current expression is shown again). */
+export function forgetLook(state, key) {
+  if (!state.looks?.[key]) return state;
+  const looks = { ...state.looks };
+  delete looks[key];
+  return { ...state, looks };
+}
+
+/** The key shown as speaking: the manual focus, else the last speaker. */
+export const shownActiveKey = (state) => state?.focusKey || state?.activeKey || null;
 
 /** Remove every stand that has not spoken since `beforeTs`. */
 export function removeIdle(state, beforeTs) {

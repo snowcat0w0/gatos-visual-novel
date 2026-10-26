@@ -7,9 +7,11 @@ import * as StageDOM from "./stage-dom.js";
 import { createPlayer } from "./player-core.js";
 import { describe, toEntry, dialogueHtml } from "./entries.js";
 import { canViewRef, openRef } from "./links.js";
-import { broadcastStage, broadcastRemove, clearAll } from "./socket.js";
+import { broadcastStage, broadcastRemove, broadcastRelease, clearAll } from "./socket.js";
 import { openKeywordManager } from "./keyword-manager.js";
 import { openLogPlayer } from "./log-player.js";
+import { castMembers, castKeys, currentLook, getLayout, actorKey } from "./cast.js";
+import { decorate, clearDecorations, setupStageInteractions, onStandClick, gmToolMenuItems } from "./stage-extras.js";
 
 let root = null;
 let state = StageState.createState(StageState.MAX_SLOTS);
@@ -19,7 +21,8 @@ let idleTimer = null;
 let ready = false;
 
 const maxSlots = () => setting("maxSlots");
-const reducerOpts = () => ({ maxSlots: maxSlots(), slotOrder: StageState.centerOutOrder(maxSlots()) });
+/** Reducer options; cast members are pinned (they stand on the cast layer and are never seated or evicted). */
+const reducerOpts = () => ({ maxSlots: maxSlots(), slotOrder: StageState.centerOutOrder(maxSlots()), pinned: castKeys() });
 
 /** Run stage updates strictly in order (message HTML is rendered asynchronously). */
 function enqueue(fn) {
@@ -33,6 +36,7 @@ function enqueue(fn) {
 
 function measure() {
   if (!root?.isConnected) return;
+  StageDOM.applyFit(root);
   const host = root.parentElement.getBoundingClientRect();
   const sidebar = document.getElementById("sidebar")?.getBoundingClientRect();
   const hotbar = document.getElementById("hotbar")?.getBoundingClientRect();
@@ -49,6 +53,8 @@ function observeLayout() {
     const el = document.getElementById(id);
     if (el) resizeObserver.observe(el);
   }
+  // The stage's own size drives the stand fit factors (cheap: CSS variables only).
+  if (root) resizeObserver.observe(root);
   measure();
 }
 
@@ -79,6 +85,7 @@ export function mountStage() {
     { capture: true }
   );
   parent.prepend(root);
+  setupStageInteractions(root);
   observeLayout();
   applyDisplaySettings();
   applyEnabled();
@@ -99,9 +106,37 @@ function onAction(action) {
   if (action === "clear") return clearAll();
 }
 
-function renderOpts(animate) {
+/**
+ * Cast figures for the renderer: visible members of the PC cast and the viewed scene's NPC cast, with the look of
+ * their latest line (state.looks) or their current expression, the mirror flag and a free position when set.
+ */
+function castFigures() {
+  if (!ready) return [];
+  const layout = getLayout();
+  const out = [];
+  for (const m of castMembers()) {
+    const look = state.looks?.[m.key] ?? currentLook(m.actor);
+    if (!look?.stand) continue;
+    out.push({
+      key: m.key,
+      slotId: m.slotId,
+      side: m.group === "pc" ? "left" : "right",
+      name: m.actor.name,
+      stand: look.stand,
+      standStyle: look.standStyle ?? null,
+      mirror: m.mirror,
+      pos: layout[m.slotId] ?? null,
+    });
+  }
+  return out;
+}
+
+function renderOpts(animate, { live = true } = {}) {
   return {
     resolveUrl,
+    cast: live ? castFigures() : [],
+    autoFit: live && !!setting("castAutoFit"),
+    onStandClick: live ? onStandClick : undefined,
     typewriter: display("typewriterMs"),
     animate,
     layout: display("standLayout"),
@@ -110,6 +145,7 @@ function renderOpts(animate) {
     onRefClick: (ref) => openRef(ref),
     onAction,
     onStandContext: (key) => {
+      // Alt + right-click (GM): take the stand off every stage. Other right-clicks open the stand menu (stage-extras).
       if (game.user.isGM && document.body.classList.contains("gvn-alt")) broadcastRemove(key);
     },
     labels: { locked: L("Link.Locked") },
@@ -120,7 +156,11 @@ function draw({ animate = true } = {}) {
   // While a log is playing the stage shows the playback; the live state keeps updating underneath.
   if (!root || playback) return;
   StageDOM.render(root, state, renderOpts(animate && !root.hidden));
+  decorate(root, state);
 }
+
+/** Redraw soon (actor / item / user changes that only affect looks, cards and highlights). */
+export const scheduleDraw = debounce(() => enqueue(() => draw({ animate: true })), 150);
 
 /* -------------------------------------------- */
 /*  Playback mode (log player)                  */
@@ -138,6 +178,7 @@ export const isPlaying = () => !!playback;
 export function enterPlayback(messages, opts = {}) {
   mountStage();
   playback?.destroy();
+  clearDecorations(root);
   root.hidden = false;
   measure();
   playback = createPlayer(root, messages, {
@@ -145,7 +186,7 @@ export function enterPlayback(messages, opts = {}) {
     typewriter: display("typewriterMs") || 30,
     labels: playerLabels(),
     formatTime: (ts) => (ts ? new Date(ts).toLocaleString(game.i18n.lang) : ""),
-    render: { ...renderOpts(true), animate: undefined },
+    render: { ...renderOpts(true, { live: false }), animate: undefined },
     ...opts,
     prefs: { oocMode: setting("oocMode"), rollMode: setting("rollMode"), isGM: (id) => game.users.get(id)?.isGM, ...(opts.prefs ?? {}) },
     onClose: () => exitPlayback(),
@@ -325,6 +366,50 @@ function startIdleTimer() {
 
 export const getState = () => foundry.utils.deepClone(state);
 
+/** The live stage element (null before ready). */
+export const getRoot = () => root;
+
+/** The live state (read only). */
+export const liveState = () => state;
+
+/** Cast changed (seats, layout, settings, viewed scene): free pinned seats and redraw. */
+export function refreshCast() {
+  if (!ready) return;
+  enqueue(() => {
+    const next = StageState.withPinned(state, castKeys());
+    if (next !== state) {
+      state = next;
+      Hooks.callAll("gvnStageChanged", state, null);
+    }
+    draw({ animate: true });
+  });
+}
+
+/** Manual focus on this client (socket "focus"). */
+export function setFocusLocal(key) {
+  enqueue(() => commit(StageState.setFocus(state, key)));
+}
+
+/** Release focus and active speaker on this client (socket "release"). */
+export function releaseLocal() {
+  enqueue(() => commit(StageState.release(state)));
+}
+
+/** A cast member's current expression changed: show it instead of the look of its last line. */
+function onUpdateUserLooks(user, changes) {
+  const current = foundry.utils.getProperty(changes, `flags.${MODULE_ID}.current`);
+  if (!ready || !current || typeof current !== "object") return;
+  const keys = Object.keys(current).map((id) => actorKey(id.replace(/^-=/, "")));
+  enqueue(() => {
+    let next = state;
+    for (const key of keys) next = StageState.forgetLook(next, key);
+    state = next;
+    draw({ animate: true });
+  });
+}
+
+const isCastActor = (actor) => !!actor && castMembers().some((m) => m.actorId === actor.id);
+
 /* -------------------------------------------- */
 /*  Chat controls button                        */
 /* -------------------------------------------- */
@@ -341,9 +426,11 @@ export function refreshToggleButtons() {
 function menuItems() {
   const gm = () => game.user.isGM;
   return [
+    ...gmToolMenuItems(),
     { label: "GVN.Stage.MenuAllOn", icon: "fa-solid fa-eye", visible: gm, onClick: () => broadcastStage(true) },
     { label: "GVN.Stage.MenuAllOff", icon: "fa-solid fa-eye-slash", visible: gm, onClick: () => broadcastStage(false) },
     { label: "GVN.Stage.MenuClearAll", icon: "fa-solid fa-broom", visible: gm, onClick: () => clearAll() },
+    { label: "GVN.Focus.ReleaseAll", icon: "fa-solid fa-hand", visible: gm, onClick: () => broadcastRelease() },
     { label: "GVN.Stage.MenuRebuild", icon: "fa-solid fa-rotate", onClick: () => rebuild() },
     { label: "GVN.Player.Open", icon: "fa-solid fa-film", onClick: () => openLogPlayer() },
     { label: "GVN.Keywords.Title", icon: "fa-solid fa-link", onClick: () => openKeywordManager() },
@@ -388,6 +475,25 @@ export function registerStageHooks() {
   }, { deferCollapse: false });
   Hooks.on("collapseSidebar", () => setTimeout(measure, 350));
   for (const hook of ["combatStart", "updateCombat", "deleteCombat", "createCombat"]) Hooks.on(hook, () => applyEnabled());
+
+  // Cast: settings (string onChange hook), the viewed scene's seats / layout, the viewed scene itself.
+  Hooks.on(`${MODULE_ID}.castChanged`, () => refreshCast());
+  Hooks.on("canvasReady", () => refreshCast()); // client-local redraw only, never a write
+  Hooks.on("updateScene", (scene, changes) => {
+    if (scene.id !== canvas?.scene?.id) return;
+    const flags = changes.flags?.[MODULE_ID];
+    if (flags && ("npcCast" in flags || "layout" in flags || "-=npcCast" in flags || "-=layout" in flags)) refreshCast();
+  });
+  // Looks and cards of cast members.
+  Hooks.on("updateUser", onUpdateUserLooks);
+  Hooks.on("updateActor", (actor) => {
+    if (isCastActor(actor)) scheduleDraw();
+  });
+  for (const hook of ["createItem", "updateItem", "deleteItem", "createActiveEffect", "updateActiveEffect", "deleteActiveEffect"]) {
+    Hooks.on(hook, (doc) => {
+      if (isCastActor(doc.parent)) scheduleDraw();
+    });
+  }
 }
 
 /** ready hook: mount and rebuild from the chat log. */

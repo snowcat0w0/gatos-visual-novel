@@ -22,6 +22,8 @@ const SNAPSHOT_EVERY = 25;
 
 /** Category of a serialized message: from `vn` when the visual-novel module recorded it, else derived. */
 export function categoryOf(m) {
+  // gatos-chat-tools shared notes are never part of the story (also when an older vn record says otherwise).
+  if (m.note === true || m.flags?.["gatos-chat-tools"]?.note) return "note";
   if (m.vn?.category) return m.vn.category;
   if (m.chitchat) return "chitchat";
   if (m.isRoll) return "roll";
@@ -58,18 +60,22 @@ export function kindFor(m, category, prefs = {}) {
   }
 }
 
+/** Parse an HTML fragment inertly (DOMParser documents never load images or run handlers). */
+function parseFragment(html) {
+  return new DOMParser().parseFromString(`<div id="gvn-root">${html}</div>`, "text/html").getElementById("gvn-root");
+}
+
 function plainText(html) {
   if (!html) return "";
-  const div = document.createElement("div");
-  div.innerHTML = html;
+  const div = parseFragment(html);
   div.querySelectorAll(".dice-tooltip, script, style").forEach((e) => e.remove());
   return (div.textContent ?? "").replace(/\s+/g, " ").trim();
 }
 
+/** Drops dice tooltips; everything else (chat-tools font-style spans, ruby …) is kept for the dialogue box. */
 function stripTooltips(html) {
   if (!html || !/dice-tooltip/.test(html)) return html ?? "";
-  const div = document.createElement("div");
-  div.innerHTML = html;
+  const div = parseFragment(html);
   div.querySelectorAll(".dice-tooltip").forEach((e) => e.remove());
   return div.innerHTML;
 }
