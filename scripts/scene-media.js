@@ -80,7 +80,7 @@ export async function applyMedia(scene, media) {
   const clean = normalizeMedia(media);
   const prev = flagsOf(scene)[MEDIA_FLAG];
   // `clean` carries every field, so the (merging) update leaves nothing stale behind.
-  if (!prev || !foundry.utils.objectsEqual(normalizeMedia(prev), clean)) await scene.update({ [`flags.${MODULE_ID}.${MEDIA_FLAG}`]: clean });
+  if (!prev || !foundry.utils.equals(normalizeMedia(prev), clean)) await scene.update({ [`flags.${MODULE_ID}.${MEDIA_FLAG}`]: clean });
   await syncMediaTiles(scene);
 }
 
@@ -389,7 +389,7 @@ export class SceneMediaConfig extends SingletonMixin(HandlebarsApplicationMixin(
   #onControl(ev, committed) {
     if (!ev.target?.closest?.("[name], range-picker, file-picker")) return;
     const next = this.#readControls();
-    if (foundry.utils.objectsEqual(next, this.#media)) return;
+    if (foundry.utils.equals(next, this.#media)) return;
     this.#media = next;
     this.#dirty = true;
     this.#preview();

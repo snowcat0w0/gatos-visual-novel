@@ -75,7 +75,7 @@ const savePlacement = debounce(() => {
   const value = { left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width), collapsed: panel.classList.contains("collapsed") };
   if (!panel.classList.contains("collapsed")) value.height = Math.round(r.height);
   else if (Number.isFinite(placement().height)) value.height = placement().height;
-  if (!foundry.utils.objectsEqual(value, placement())) game.settings.set(MODULE_ID, "quickbarPlacement", value);
+  if (!foundry.utils.equals(value, placement())) game.settings.set(MODULE_ID, "quickbarPlacement", value);
 }, 400);
 
 /** Keep the panel inside the window. */
