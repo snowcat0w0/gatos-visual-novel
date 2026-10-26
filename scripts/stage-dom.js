@@ -14,7 +14,13 @@
  *   canViewRef(ref) → boolean     false shows a locked card with the name only
  *   onRefClick(ref, event)
  *   onAction(action, event)       dialogue tool buttons (other than the built-in "collapse")
- *   onStandContext(key, event)    right-click on a stand (only reachable while body.gvn-alt is set)
+ *   onStandContext(key, event)    right-click on a stand (only reachable while stands take pointer events)
+ *   onStandClick(key, event)      left click on a stand (same)
+ *   cast: [{ key, slotId, side: "left"|"right", name, stand, standStyle, mirror, pos: {x, y, h, a}|null }]
+ *                                 fixed performers drawn besides the slots (live stage only). Unpositioned ones
+ *                                 join the automatic layout (left side, slots, right side); positioned ones
+ *                                 stand at x% (centre) / y% (bottom) with h% height of the stage.
+ *   autoFit: boolean              shrink automatically laid out stands so they do not overlap much
  *   labels: { locked, collapse, expand }
  */
 
@@ -115,6 +121,10 @@ export function buildStage(doc = document, { id = "gvn-stage", tools = [], label
     ev.preventDefault();
     root._gvn.opts.onStandContext?.(fig.dataset.key, ev);
   });
+  stands.addEventListener("click", (ev) => {
+    const fig = ev.target.closest(".gvn-stand");
+    if (fig) root._gvn.opts.onStandClick?.(fig.dataset.key, ev);
+  });
   return root;
 }
 
@@ -165,6 +175,94 @@ function setStandImage(fig, url, animate) {
   pre.src = url;
 }
 
+/* ---------- layout math (no DOM; tested under Node) ---------- */
+
+/**
+ * Horizontal centres (% of the stage width) of automatically laid out stands.
+ * spread: every stand evenly spaced; fixed: one column per slot plus one per side performer.
+ * @param {object} args
+ * @param {number} [args.left=0]       Unpositioned performers on the left.
+ * @param {number[]} [args.slots=[]]   Indexes of occupied slots, in slot order.
+ * @param {number} [args.right=0]      Unpositioned performers on the right.
+ * @param {number} [args.n]            Slot count (fixed layout).
+ * @param {"spread"|"fixed"} [args.layout="spread"]
+ * @returns {{left: number[], slots: number[], right: number[], columns: number}}
+ */
+export function autoPositions({ left = 0, slots = [], right = 0, n = slots.length, layout = "spread" } = {}) {
+  const fixed = layout === "fixed";
+  const middle = fixed ? Math.max(n, 1) : slots.length;
+  const columns = left + middle + right;
+  const at = (k) => ((k + 0.5) * 100) / Math.max(columns, 1);
+  return {
+    left: Array.from({ length: left }, (_, k) => at(k)),
+    slots: slots.map((i, rank) => at(left + (fixed ? i : rank))),
+    right: Array.from({ length: right }, (_, k) => at(left + middle + k)),
+    columns,
+  };
+}
+
+/**
+ * Height factor for automatically laid out stands so `count` of them fit side by side. A stand box is half as wide
+ * as it is high; neighbours may overlap by `overlap` of their width (stand art rarely fills its box).
+ * @param {object} args
+ * @param {number} args.count             Stands (columns) sharing the width.
+ * @param {number} args.aspect            Stage width / height.
+ * @param {number} [args.standHeight=85]  Stand height in % of the stage.
+ * @param {number} [args.overlap=0.25]
+ * @param {number} [args.min=0.4]
+ * @returns {number} 1 when everything fits, else the shrink factor (>= min).
+ */
+export function autoFit({ count, aspect, standHeight = 85, overlap = 0.25, min = 0.4 } = {}) {
+  if (!(count > 1) || !(aspect > 0)) return 1;
+  const width = ((standHeight / 100) * 0.5) / aspect; // one box, as a fraction of the stage width
+  const need = count * width * (1 - overlap);
+  return need <= 1 ? 1 : Math.max(min, 1 / need);
+}
+
+/**
+ * Height factor for a freely positioned stand saved at stage aspect `refAspect`: on a narrower stage the stand
+ * shrinks with it, so stands placed side by side keep their gaps.
+ */
+export function positionFit({ aspect, refAspect, min = 0.5 } = {}) {
+  if (!(aspect > 0) || !(refAspect > 0) || aspect >= refAspect) return 1;
+  return Math.max(min, aspect / refAspect);
+}
+
+/** A stored free position, clamped; null when unusable. { x, y: % of the stage, h: % height, a: aspect saved at } */
+export function cleanPosition(pos) {
+  if (!pos || typeof pos !== "object") return null;
+  const x = Number(pos.x);
+  const y = Number(pos.y);
+  const h = Number(pos.h);
+  if (![x, y, h].every(Number.isFinite)) return null;
+  const a = Number(pos.a);
+  return {
+    x: Math.min(100, Math.max(0, x)),
+    y: Math.min(95, Math.max(-50, y)),
+    h: Math.min(150, Math.max(10, h)),
+    a: Number.isFinite(a) && a > 0 ? a : null,
+  };
+}
+
+/* ---------- rendering ---------- */
+
+/** Apply the size-dependent factors (call after a resize; render calls it too). */
+export function applyFit(root) {
+  const g = root?._gvn;
+  if (!g) return;
+  const rect = root.getBoundingClientRect();
+  const aspect = rect.height > 0 ? rect.width / rect.height : 0;
+  const view = root.ownerDocument.defaultView;
+  const height = parseFloat(view?.getComputedStyle(root).getPropertyValue("--gvn-stand-height")) || 85;
+  const fit = g.opts?.autoFit ? autoFit({ count: g.autoCount ?? 0, aspect, standHeight: height }) : 1;
+  root.style.setProperty("--gvn-fit", String(Math.round(fit * 1000) / 1000));
+  for (const fig of g.figures.values()) {
+    if (!fig.classList.contains("gvn-pos")) continue;
+    const pf = positionFit({ aspect, refAspect: Number(fig.dataset.refAspect) || 0 });
+    fig.style.setProperty("--gvn-pfit", String(Math.round(pf * 1000) / 1000));
+  }
+}
+
 function renderStands(root, state, opts) {
   const doc = root.ownerDocument;
   const box = root.querySelector(".gvn-stands");
@@ -172,30 +270,63 @@ function renderStands(root, state, opts) {
   const resolve = opts.resolveUrl ?? ((p) => p);
   const animate = opts.animate !== false;
   const n = state.slots.length || 1;
-  const occupied = state.slots.map((s, i) => (s ? { s, i } : null)).filter(Boolean);
+  const cast = (Array.isArray(opts.cast) ? opts.cast : []).filter((c) => c?.key && c.stand);
+  const castKeys = new Set(cast.map((c) => c.key));
+  const occupied = state.slots.map((s, i) => (s && !castKeys.has(s.key) ? { s, i } : null)).filter(Boolean);
+  const activeKey = state.focusKey || state.activeKey || null;
   const seen = new Set();
 
-  occupied.forEach(({ s, i }, rank) => {
-    seen.add(s.key);
-    let fig = figures.get(s.key);
+  const autoLeft = cast.filter((c) => c.side !== "right" && !cleanPosition(c.pos));
+  const autoRight = cast.filter((c) => c.side === "right" && !cleanPosition(c.pos));
+  const lefts = autoPositions({ left: autoLeft.length, slots: occupied.map((o) => o.i), right: autoRight.length, n, layout: opts.layout });
+  root._gvn.autoCount = lefts.columns;
+  const autoLeftOf = new Map([...autoLeft.map((c, k) => [c.key, lefts.left[k]]), ...autoRight.map((c, k) => [c.key, lefts.right[k]])]);
+
+  const items = [
+    ...cast.map((c) => ({ key: c.key, name: c.name, stand: c.stand, standStyle: c.standStyle, cast: c, slot: null, left: autoLeftOf.get(c.key) })),
+    ...occupied.map(({ s, i }, rank) => ({ key: s.key, name: s.name, stand: s.stand, standStyle: s.standStyle, cast: null, slot: i, left: lefts.slots[rank] })),
+  ];
+
+  for (const it of items) {
+    seen.add(it.key);
+    let fig = figures.get(it.key);
     const fresh = !fig || fig.classList.contains("leaving");
     if (fresh) {
       fig?.remove();
-      fig = makeFigure(doc, s.key);
-      figures.set(s.key, fig);
+      fig = makeFigure(doc, it.key);
+      figures.set(it.key, fig);
       if (animate) fig.classList.add("entering");
       box.append(fig);
     }
-    const left = opts.layout === "fixed" ? ((i + 0.5) * 100) / n : ((rank + 0.5) * 100) / occupied.length;
-    fig.style.setProperty("--gvn-left", `${left}%`);
-    fig.style.setProperty("--gvn-scale", String(s.standStyle?.scale ?? 1));
-    fig.style.setProperty("--gvn-offset-y", String(s.standStyle?.offsetY ?? 0));
-    fig.dataset.slot = String(i);
-    fig.dataset.name = s.name ?? "";
-    fig.classList.toggle("active", s.key === state.activeKey);
-    setStandImage(fig, resolve(s.stand), animate && !fresh);
+    const c = it.cast;
+    const pos = c ? cleanPosition(c.pos) : null;
+    fig.classList.toggle("gvn-pos", !!pos);
+    if (pos) {
+      fig.style.setProperty("--gvn-x", String(pos.x));
+      fig.style.setProperty("--gvn-y", String(pos.y));
+      fig.style.setProperty("--gvn-h", String(pos.h));
+      fig.dataset.refAspect = pos.a ? String(pos.a) : "";
+    } else {
+      fig.style.setProperty("--gvn-left", `${it.left}%`);
+      delete fig.dataset.refAspect;
+    }
+    fig.style.setProperty("--gvn-scale", String(it.standStyle?.scale ?? 1));
+    fig.style.setProperty("--gvn-offset-y", String(it.standStyle?.offsetY ?? 0));
+    if (it.slot !== null) fig.dataset.slot = String(it.slot);
+    else delete fig.dataset.slot;
+    fig.dataset.name = it.name ?? "";
+    fig.classList.toggle("gvn-cast", !!c);
+    fig.classList.toggle("gvn-cast-left", !!c && c.side !== "right");
+    fig.classList.toggle("gvn-cast-right", !!c && c.side === "right");
+    fig.classList.toggle("mirror", !!c?.mirror);
+    if (c?.slotId) fig.dataset.slotId = c.slotId;
+    else delete fig.dataset.slotId;
+    fig.classList.toggle("active", it.key === activeKey);
+    fig.classList.toggle("focused", !!state.focusKey && it.key === state.focusKey);
+    setStandImage(fig, resolve(it.stand), animate && !fresh);
     if (fresh && animate) requestAnimationFrame(() => requestAnimationFrame(() => fig.classList.remove("entering")));
-  });
+  }
+  root.classList.toggle("gvn-has-active", !!activeKey);
 
   for (const [key, fig] of figures) {
     if (seen.has(key)) continue;
@@ -207,6 +338,7 @@ function renderStands(root, state, opts) {
     fig.classList.add("leaving");
     setTimeout(() => fig.remove(), LEAVE_MS);
   }
+  applyFit(root);
 }
 
 /* -------------------------------------------- */

@@ -3,8 +3,10 @@ import { htmlRoot } from "./lib.js";
 import { setting } from "./settings.js";
 import { getExpressions } from "./expressions.js";
 
-/** `{{키워드}}` or `{{키워드|표시 텍스트}}` (PLAN §7.1). A fresh RegExp per use (global state). */
-export const keywordRegExp = () => /\{\{([^}|]+?)(?:\|([^}]+?))?\}\}/g;
+import { keywordRegExp, isGctNote } from "./tags.js";
+
+/** `{{키워드}}` or `{{키워드|표시 텍스트}}` (PLAN §7.1); never `{{@…}}` (chat-tools font styles), see tags.js. */
+export { keywordRegExp };
 
 const MAX_TEXT = 20000;
 const norm = (s) => String(s ?? "").trim().toLocaleLowerCase();
@@ -120,10 +122,11 @@ export function resolveKeyword(text, user = game.user) {
 
 function stripSecrets(html) {
   if (!html || !/secret/.test(html)) return html;
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  div.querySelectorAll("section.secret").forEach((s) => s.remove());
-  return div.innerHTML;
+  // <template> content is inert: no image loads or handlers run while parsing (a detached <div> would).
+  const tpl = document.createElement("template");
+  tpl.innerHTML = html;
+  tpl.content.querySelectorAll("section.secret").forEach((s) => s.remove());
+  return tpl.innerHTML;
 }
 
 function capText(html) {
@@ -186,7 +189,7 @@ export function processContent(content, user = game.user) {
 
 /** preCreateChatMessage (author's client): resolve links with the author's permission and freeze refs. */
 export function onPreCreateChatMessageLinks(message, data, options, userId) {
-  if (userId !== game.user.id) return;
+  if (userId !== game.user.id || isGctNote(message)) return;
   const content = message.content;
   if (typeof content !== "string" || !content.includes("{{")) return;
   const { content: out, refs, failed } = processContent(content);
@@ -199,7 +202,7 @@ export function onPreCreateChatMessageLinks(message, data, options, userId) {
 
 /** preUpdateChatMessage (editor's client): same for edited content; refs are merged. */
 export function onPreUpdateChatMessageLinks(message, changes, options, userId) {
-  if (userId !== game.user.id || typeof changes.content !== "string" || !changes.content.includes("{{")) return;
+  if (userId !== game.user.id || isGctNote(message) || typeof changes.content !== "string" || !changes.content.includes("{{")) return;
   const { content, refs, failed } = processContent(changes.content);
   changes.content = content;
   if (refs.length) {
@@ -229,7 +232,7 @@ export async function openRef(ref) {
 export function onRenderChatMessageLinks(message, html) {
   const el = htmlRoot(html);
   const refs = message?.flags?.[MODULE_ID]?.refs;
-  if (!el || !refs?.length) return;
+  if (!el || !refs?.length || isGctNote(message)) return;
   for (const a of el.querySelectorAll("a.content-link[data-uuid]")) {
     const index = refs.findIndex((r) => r.uuid === a.dataset.uuid);
     if (index < 0 || a.classList.contains("gvn-ref-link")) continue;

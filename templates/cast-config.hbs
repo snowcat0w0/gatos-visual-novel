@@ -1,0 +1,35 @@
+<div class="gvn-cc-root">
+<div class="gvn-cc-body">
+  <p class="hint">{{localize "GVN.Cast.Intro"}}</p>
+  {{#each groups}}
+  <fieldset class="gvn-cc-group">
+    <legend>{{legend}}</legend>
+    {{#if rows.length}}
+    <ol class="gvn-cc-seats">
+      {{#each rows}}
+      <li class="gvn-cc-seat{{#if missing}} missing{{/if}}" data-group="{{group}}" data-index="{{index}}">
+        <span class="gvn-cc-n">{{n}}</span>
+        {{#if img}}<img class="gvn-cc-img" src="{{img}}" alt="">{{else}}<span class="gvn-cc-img empty"><i class="fa-solid fa-user"></i></span>{{/if}}
+        <select data-field="actor" class="gvn-cc-actor">
+          <option value="">{{#if missing}}{{localize "GVN.Cast.MissingActor"}}{{else}}{{localize "GVN.Cast.Empty"}}{{/if}}</option>
+          {{#each options}}<option value="{{id}}"{{#if selected}} selected{{/if}}>{{name}}</option>{{/each}}
+        </select>
+        <label class="gvn-cc-check" data-tooltip="{{localize 'GVN.Cast.VisibleHint'}}"><input type="checkbox" data-field="visible"{{#if visible}} checked{{/if}}{{#unless actorId}} disabled{{/unless}}> {{localize "GVN.Cast.Visible"}}</label>
+        <label class="gvn-cc-check"><input type="checkbox" data-field="mirror"{{#if mirror}} checked{{/if}}{{#unless actorId}} disabled{{/unless}}> {{localize "GVN.Cast.Mirror"}}</label>
+        <a class="gvn-cc-clear" data-action="clearSeat" data-tooltip="{{localize 'GVN.Cast.Clear'}}"><i class="fa-solid fa-xmark"></i></a>
+      </li>
+      {{/each}}
+    </ol>
+    {{else}}
+    <p class="hint">{{empty}}</p>
+    {{/if}}
+  </fieldset>
+  {{/each}}
+  <p class="hint">{{localize "GVN.Cast.DropHint"}}</p>
+</div>
+<footer class="form-footer">
+  {{#if dirty}}<span class="gvn-cc-dirty"><i class="fa-solid fa-circle-exclamation"></i> {{localize "GVN.Config.Unsaved"}}</span>{{/if}}
+  <button type="button" data-action="reset"><i class="fa-solid fa-rotate-left"></i> {{localize "GVN.Config.Reset"}}</button>
+  <button type="submit"><i class="fa-solid fa-floppy-disk"></i> {{localize "GVN.Config.Save"}}</button>
+</footer>
+</div>

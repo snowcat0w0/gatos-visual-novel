@@ -302,6 +302,43 @@
         "Name": "노벨창 화면 설정 (개인)",
         "Label": "내 화면 설정",
         "Hint": "스탠딩 높이·배치·회색 처리·대사창 투명도·글자 크기·타자 효과는 GM이 정한 값이 모두의 기본값입니다. 여기서 원하는 항목만 내 값으로 바꿀 수 있습니다."
+      },
+      "NpcCastMax": {
+        "Name": "장면별 NPC 출연진 수",
+        "Hint": "장면마다 고정으로 세울 수 있는 NPC 수(1~6)."
+      },
+      "CastAutoFit": {
+        "Name": "스탠딩 자동 맞춤",
+        "Hint": "무대에 선 캐릭터가 많거나 화면이 좁으면 스탠딩을 줄여서 서로 많이 겹치지 않게 해요. 자유 배치한 스탠딩은 화면 비율에 맞춰 줄어요."
+      },
+      "CastHud": {
+        "Name": "출연진 카드 표시",
+        "Hint": "PC 출연진 스탠딩 위에 능력치·아이템 카드를 띄워요(GM과 그 캐릭터 주인에게만). 내용은 시스템 모듈이 API로 채워요. 채우는 모듈이 없으면 아무것도 안 나와요."
+      },
+      "NpcHud": {
+        "Name": "NPC 출연진 카드",
+        "Hint": "NPC 출연진의 카드를 보여 줄지 정해요.",
+        "Gm": "GM에게만",
+        "Off": "끔"
+      },
+      "AvHighlight": {
+        "Name": "음성 대화 강조",
+        "Hint": "Foundry 음성/화상 대화에서 말하는 사용자의 캐릭터 스탠딩을 밝게 강조해요(지정 캐릭터, 없으면 그 사용자가 가진 PC 출연진 한 명)."
+      },
+      "BubbleMode": {
+        "Name": "말풍선",
+        "Hint": "대사를 말한 캐릭터 스탠딩 위 말풍선으로도 보여 줘요. 굴림과 볼 수 없는 귓속말에는 안 나와요.",
+        "Off": "끔",
+        "Both": "말풍선 + 대사창",
+        "Bubble": "말풍선만 (서술은 대사창)"
+      },
+      "MediaHideGrid": {
+        "Name": "연출 중 격자·테두리 숨김",
+        "Hint": "장면 연출이 있는 장면에서 격자와 장면 테두리를 내 화면에서 숨겨요."
+      },
+      "ShowQuickbar": {
+        "Name": "장면 퀵바 표시 (GM)",
+        "Hint": "GM 화면에 장소 프리셋과 연출 도구가 모인 작은 퀵바를 띄워요. 장면 컨트롤의 영화판 아이콘으로도 켜고 꺼요."
       }
     },
     "Display": {
@@ -313,6 +350,127 @@
       "ResetAll": "모두 GM 기본값으로",
       "Save": "저장",
       "Saved": "노벨창 화면 설정을 저장했습니다."
+    },
+    "Tools": {
+      "Quickbar": "장면 퀵바 표시/숨기기"
+    },
+    "Cast": {
+      "Title": "출연진 설정",
+      "Intro": "출연진은 누가 말하든 노벨창에 늘 서 있는 캐릭터예요. PC 출연진은 모든 장면에, NPC 출연진은 지금 보고 있는 장면에만 나와요. 말하면 그 캐릭터가 밝아지고, 출연진이 아닌 캐릭터는 지금처럼 말할 때 무대에 올라와요.",
+      "PcLegend": "PC 출연진 (모든 장면, 최대 6명)",
+      "NpcLegend": "NPC 출연진 (이 장면)",
+      "PcSeat": "PC {n}",
+      "NpcSeat": "NPC {n}",
+      "Empty": "— 비어 있음 —",
+      "MissingActor": "— 지워진 액터 —",
+      "Visible": "표시",
+      "VisibleHint": "끄면 자리는 남겨 두고 무대에서만 내려요. 이때 그 캐릭터가 말하면 일반 화자처럼 무대에 올라와요.",
+      "Mirror": "좌우 반전",
+      "Clear": "자리 비우기",
+      "DropHint": "액터 목록에서 액터를 끌어다 자리에 놓아도 돼요. 같은 액터는 한 자리에만 앉아요.",
+      "Saved": "출연진을 저장했어요.",
+      "WorldActorsOnly": "월드에 있는 액터만 출연진이 될 수 있어요. 먼저 가져오기 하세요.",
+      "RemoveFromStage": "무대에서 내리기",
+      "OpenSheet": "시트 열기"
+    },
+    "Focus": {
+      "Focus": "이 캐릭터에 초점",
+      "Unfocus": "초점 풀기",
+      "ReleaseAll": "초점·화자 강조 모두 풀기"
+    },
+    "Layout": {
+      "Title": "스탠딩 배치 편집",
+      "ScopeWorld": "모든 장면에 저장",
+      "ScopeScene": "이 장면에만 저장",
+      "Reset": "배치 초기화",
+      "Done": "끝내기",
+      "Resize": "위아래로 끌어서 크기 조절"
+    },
+    "Media": {
+      "Title": "장면 연출",
+      "Intro": "배경 그림(캔버스 전체)과 가운데 그림을 타일로 깔아요. 컨트롤을 바꾸면 내 화면에서만 미리 보이고, '적용'을 눌러야 저장돼요. 장면 자체의 배경 그림은 건드리지 않아요.",
+      "NoScene": "보고 있는 장면이 없어요.",
+      "Backdrop": "배경 (캔버스 전체)",
+      "Center": "가운데 그림",
+      "Display": "화면",
+      "Image": "그림/영상",
+      "Fit": "맞추기",
+      "FitCover": "꽉 채우기",
+      "FitContain": "전체 보이기",
+      "Opacity": "불투명도",
+      "Scale": "크기 (장면 대비)",
+      "Blur": "흐린 사본",
+      "UseBlur": "흐린 사본 사용",
+      "BakeBlur": "흐린 사본 만들기",
+      "BlurHint": "배경 그림을 흐리게 한 WebP 파일을 월드 폴더(gatos-vn-blur)에 한 번 만들어 둬요.",
+      "BlurVideo": "영상에는 흐린 사본을 만들 수 없어요.",
+      "NoUpload": "파일 업로드 권한이 없어서 흐린 사본을 만들 수 없어요.",
+      "NoBackdrop": "배경 그림을 먼저 고르세요.",
+      "BlurBaking": "흐린 사본을 만드는 중…",
+      "BlurDone": "흐린 사본을 만들었어요. '적용'을 눌러 저장하세요.",
+      "BlurLoadFailed": "원본 그림을 읽지 못했어요 (HTTP {status}).",
+      "BlurEncodeFailed": "흐린 사본을 이미지로 저장하지 못했어요.",
+      "BgColor": "바탕색",
+      "BgColorOn": "사용",
+      "BgColorHint": "그림 바깥과 투명한 부분에 보이는 색이에요. 각자 화면에서만 칠하고 장면 설정은 바꾸지 않아요.",
+      "HideHotbar": "매크로 바 숨기기",
+      "HideHotbarHint": "이 장면에 연출이 있는 동안 모두의 매크로 바를 숨겨요.",
+      "Presets": "장소 프리셋",
+      "PresetNone": "저장된 프리셋이 없어요.",
+      "PresetSave": "지금 값을 프리셋으로 저장",
+      "PresetName": "프리셋 이름",
+      "PresetUnnamed": "이름 없는 장소",
+      "PresetApply": "적용",
+      "PresetLoad": "편집창으로 불러오기",
+      "PresetDelete": "프리셋 지우기",
+      "PresetDeleteConfirm": "프리셋 '{name}'을(를) 지울까요?",
+      "PresetEmpty": "저장할 그림이 없어요.",
+      "PresetApplied": "장소 '{name}'을(를) 적용했어요.",
+      "Apply": "적용",
+      "Applied": "장면 연출을 적용했어요.",
+      "Clear": "연출 지우기",
+      "ClearConfirm": "이 장면의 연출 타일과 설정을 지울까요? 프리셋과 장면 배경은 그대로 남아요.",
+      "Cleared": "장면 연출을 지웠어요.",
+      "Unapplied": "적용하지 않은 변경이 있어요",
+      "SyncFailed": "연출 타일을 만들지 못했어요. 콘솔을 확인하세요."
+    },
+    "Palette": {
+      "ItemTitle": "아이템 팔레트",
+      "NpcTitle": "NPC 팔레트",
+      "Search": "이름으로 찾기",
+      "SourceAll": "전체",
+      "SourceFavorites": "즐겨찾기",
+      "SourceWorld": "월드",
+      "SourceCompendium": "컴펜디움",
+      "AllFolders": "모든 폴더",
+      "World": "월드",
+      "Reload": "목록 새로 읽기",
+      "ItemHint": "PC 출연진 스탠딩에 끌어다 놓으면 그 캐릭터에게 사본을 줘요. 우클릭: 줄 PC 고르기, 더블클릭: 시트 열기.",
+      "NpcHint": "누르면 이 장면의 NPC 출연진에 넣거나 빼요.",
+      "Favorite": "즐겨찾기",
+      "Give": "PC에게 주기",
+      "GiveTo": "받을 PC",
+      "GiveTitle": "{name} 주기",
+      "Given": "{actor}에게 {item}을(를) 줬어요.",
+      "NoItem": "아이템을 찾지 못했어요.",
+      "NoPc": "PC 출연진이 없어요. 출연진 설정에서 먼저 정하세요.",
+      "Empty": "해당하는 항목이 없어요.",
+      "More": "{count}개 더 있어요. 검색이나 폴더로 좁혀 보세요.",
+      "IndexFailed": "아이템 목록을 읽지 못했어요.",
+      "InSeat": "{n}번 자리",
+      "NpcFull": "NPC 자리가 다 찼어요",
+      "ReplaceSeat": "{name}을(를) 앉힐 자리",
+      "SeatLabel": "{n}번: {name}"
+    },
+    "Quickbar": {
+      "Title": "장면 퀵바",
+      "Collapse": "접기/펼치기",
+      "Hide": "퀵바 숨기기 (장면 컨트롤에서 다시 켜요)",
+      "NoPresets": "이 장면에 장소 프리셋이 없어요. 장면 연출 창에서 만들어요.",
+      "ApplyPreset": "'{name}' 적용",
+      "Director": "스탠딩 조작 (클릭: 초점, 우클릭: 메뉴)",
+      "Notes": "메모 (Chat Tools)",
+      "Whispers": "귓속말 (Chat Tools)"
     }
   }
 }

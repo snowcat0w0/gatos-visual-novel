@@ -2,6 +2,7 @@ import { MODULE_ID, L, mod, chatTools } from "./constants.js";
 import { esc } from "./lib.js";
 import { setting, display } from "./settings.js";
 import { describe } from "./entries.js";
+import { isGctNote } from "./tags.js";
 import { centerOutOrder, STATE_VERSION } from "./stage-state.js";
 
 const BUNDLED = new Set(["zip", "dir"]);
@@ -23,6 +24,11 @@ function stageHeader() {
 
 /** gctSerializeMessage: record the expression, refs and stage classification on every message. */
 export function onSerializeMessage(message, data) {
+  if (isGctNote(message)) {
+    data.note = true;
+    data.vn = { kind: "ignore", category: "note", refs: [] };
+    return;
+  }
   try {
     const e = describe(message, { viewer: false });
     data.vn = {

@@ -1,5 +1,6 @@
 import { MODULE_ID, DEFAULT_EXPRESSION, L, chatTools } from "./constants.js";
 import { setting } from "./settings.js";
+import { splitInlineTag, isGctNote } from "./tags.js";
 
 const CURRENT_FLAG = "current";
 
@@ -181,9 +182,6 @@ export function expressionFlagFor(speaker, expressionId = DEFAULT_EXPRESSION) {
 
 const isChitchat = (message) => !!message?.flags?.["gatos-chat-tools"]?.chitchat;
 
-/** Leading `{표정}` tag: single braces, not `{{` (PLAN §5.3). */
-const INLINE_TAG = /^(\s*(?:<p>)?\s*)\{([^{}|]+?)\}\s*/;
-
 /**
  * Freeze the speaker's expression images on a new message (author's client only).
  * Runs from chat-tools' `gctSpeakerResolved` hook (after the speaker lock) or, as a fallback,
@@ -191,7 +189,7 @@ const INLINE_TAG = /^(\s*(?:<p>)?\s*)\{([^{}|]+?)\}\s*/;
  */
 export function freezeExpression(message, data, options, userId) {
   if (userId !== game.user.id) return;
-  if (isChitchat(message)) return;
+  if (isChitchat(message) || isGctNote(message)) return;
   const speaker = message.speaker;
   const { actor } = speakerDocs(speaker);
   const update = {};
@@ -199,10 +197,11 @@ export function freezeExpression(message, data, options, userId) {
 
   // Inline tag: "{웃음} 대사" speaks this one message with that expression.
   if (actor && setting("inlineTag") && !message.isRoll && typeof message.content === "string") {
-    const m = INLINE_TAG.exec(message.content);
-    const entry = m ? findExpressionByName(actor, m[2]) : null;
+    // tags.js: `{@…}` (chat-tools font styles) and `{{…}}` (keyword links) are never an expression tag.
+    const tag = splitInlineTag(message.content);
+    const entry = tag ? findExpressionByName(actor, tag.name) : null;
     if (entry) {
-      update.content = m[1] + message.content.slice(m[0].length);
+      update.content = tag.rest;
       expressionId = entry.id;
       if (setting("inlineTagSticky")) setCurrentExpression(actor.id, entry.id);
     }

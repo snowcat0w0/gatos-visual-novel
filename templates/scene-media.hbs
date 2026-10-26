@@ -1,0 +1,93 @@
+<div class="gvn-sm-root">
+<div class="gvn-sm-body">
+  {{#unless scene}}<p class="hint">{{localize "GVN.Media.NoScene"}}</p>{{/unless}}
+  <p class="hint">{{localize "GVN.Media.Intro"}}</p>
+
+  <fieldset>
+    <legend>{{localize "GVN.Media.Backdrop"}}</legend>
+    <div class="form-group">
+      <label>{{localize "GVN.Media.Image"}}</label>
+      <div class="form-fields"><file-picker name="backdrop.src" type="imagevideo" value="{{media.backdrop.src}}"></file-picker></div>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GVN.Media.Fit"}}</label>
+      <div class="form-fields">
+        <select name="backdrop.fit">{{#each backdropFits}}<option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>{{/each}}</select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GVN.Media.Opacity"}}</label>
+      <div class="form-fields"><range-picker name="backdrop.opacity" value="{{media.backdrop.opacity}}" min="{{opacityRange.min}}" max="{{opacityRange.max}}" step="{{opacityRange.step}}"></range-picker></div>
+    </div>
+    <div class="form-group gvn-sm-blur">
+      <label>{{localize "GVN.Media.Blur"}}</label>
+      <div class="form-fields">
+        <label class="gvn-sm-check"><input type="checkbox" name="backdrop.useBlur"{{#if media.backdrop.useBlur}} checked{{/if}}{{#unless media.backdrop.blurSrc}} disabled{{/unless}}> {{localize "GVN.Media.UseBlur"}}</label>
+        <button type="button" data-action="bakeBlur"{{#unless canBlur}} disabled{{/unless}}{{#if busy}} disabled{{/if}}><i class="fa-solid fa-droplet"></i> {{localize "GVN.Media.BakeBlur"}}</button>
+      </div>
+      <p class="hint">
+        {{#if backdropIsVideo}}{{localize "GVN.Media.BlurVideo"}}{{else}}{{#unless canUpload}}{{localize "GVN.Media.NoUpload"}}{{else}}{{localize "GVN.Media.BlurHint"}}{{/unless}}{{/if}}
+        {{#if media.backdrop.blurSrc}}<br><code class="gvn-sm-path">{{media.backdrop.blurSrc}}</code>{{/if}}
+      </p>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{localize "GVN.Media.Center"}}</legend>
+    <div class="form-group">
+      <label>{{localize "GVN.Media.Image"}}</label>
+      <div class="form-fields"><file-picker name="center.src" type="imagevideo" value="{{media.center.src}}"></file-picker></div>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GVN.Media.Fit"}}</label>
+      <div class="form-fields">
+        <select name="center.fit">{{#each centerFits}}<option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>{{/each}}</select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GVN.Media.Scale"}}</label>
+      <div class="form-fields"><range-picker name="center.scale" value="{{media.center.scale}}" min="{{scaleRange.min}}" max="{{scaleRange.max}}" step="{{scaleRange.step}}"></range-picker></div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{localize "GVN.Media.Display"}}</legend>
+    <div class="form-group">
+      <label>{{localize "GVN.Media.BgColor"}}</label>
+      <div class="form-fields">
+        <label class="gvn-sm-check"><input type="checkbox" name="bgOn"{{#if bgOn}} checked{{/if}}> {{localize "GVN.Media.BgColorOn"}}</label>
+        <input type="color" name="bgColor" value="{{bgColor}}">
+      </div>
+      <p class="hint">{{localize "GVN.Media.BgColorHint"}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{localize "GVN.Media.HideHotbar"}}</label>
+      <div class="form-fields"><input type="checkbox" name="hideHotbar"{{#if media.hideHotbar}} checked{{/if}}></div>
+      <p class="hint">{{localize "GVN.Media.HideHotbarHint"}}</p>
+    </div>
+  </fieldset>
+
+  <fieldset class="gvn-sm-presets">
+    <legend>{{localize "GVN.Media.Presets"}}</legend>
+    <ol class="gvn-sm-preset-list">
+      {{#each presets}}
+      <li class="gvn-sm-preset" data-preset-id="{{id}}" data-preset-name="{{name}}">
+        <span class="gvn-sm-preset-name">{{name}}</span>
+        <a data-action="applyPreset" data-tooltip="{{localize 'GVN.Media.PresetApply'}}"><i class="fa-solid fa-play"></i></a>
+        <a data-action="loadPreset" data-tooltip="{{localize 'GVN.Media.PresetLoad'}}"><i class="fa-solid fa-pen"></i></a>
+        <a data-action="deletePreset" data-tooltip="{{localize 'GVN.Media.PresetDelete'}}"><i class="fa-solid fa-trash"></i></a>
+      </li>
+      {{else}}
+      <li class="hint">{{localize "GVN.Media.PresetNone"}}</li>
+      {{/each}}
+    </ol>
+    <button type="button" data-action="savePreset"{{#unless scene}} disabled{{/unless}}><i class="fa-solid fa-bookmark"></i> {{localize "GVN.Media.PresetSave"}}</button>
+  </fieldset>
+</div>
+<footer class="form-footer">
+  <span class="gvn-sm-dirty"{{#unless dirty}} hidden{{/unless}}><i class="fa-solid fa-circle-exclamation"></i> {{localize "GVN.Media.Unapplied"}}</span>
+  <button type="button" data-action="revert"><i class="fa-solid fa-rotate-left"></i> {{localize "GVN.Config.Reset"}}</button>
+  <button type="button" data-action="clear"{{#unless applied}} disabled{{/unless}}><i class="fa-solid fa-eraser"></i> {{localize "GVN.Media.Clear"}}</button>
+  <button type="submit"{{#unless scene}} disabled{{/unless}}{{#if busy}} disabled{{/if}}><i class="fa-solid fa-check"></i> {{localize "GVN.Media.Apply"}}</button>
+</footer>
+</div>

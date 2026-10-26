@@ -1,7 +1,7 @@
 import { MODULE_ID, L, mod } from "./constants.js";
 import { createSocket } from "./lib.js";
 import { applyKeywordOp } from "./links.js";
-import { removeStandLocal } from "./stage.js";
+import { removeStandLocal, setFocusLocal, releaseLocal } from "./stage.js";
 
 /**
  * gatos-lib socket on `module.gatos-visual-novel`. Broadcasts ("stage", "remove") reach every other client and
@@ -25,6 +25,23 @@ socket.registerHandler(
   "remove",
   ({ key }, user) => {
     if (user?.isGM) removeStandLocal(key);
+  },
+  { anyClient: true },
+);
+
+// Manual speaker focus (GM): ephemeral like the stage itself; the next speech line clears it on every client.
+socket.registerHandler(
+  "focus",
+  ({ key }, user) => {
+    if (user?.isGM) setFocusLocal(key ?? null);
+  },
+  { anyClient: true },
+);
+
+socket.registerHandler(
+  "release",
+  (data, user) => {
+    if (user?.isGM) releaseLocal();
   },
   { anyClient: true },
 );
@@ -55,6 +72,20 @@ export function broadcastRemove(key) {
   if (!game.user.isGM) return;
   socket.broadcast("remove", { key });
   removeStandLocal(key);
+}
+
+/** GM: focus one stand on every stage (null clears the focus). */
+export function broadcastFocus(key) {
+  if (!game.user.isGM) return ui.notifications.warn(L("Stage.GMOnly"));
+  socket.broadcast("focus", { key: key ?? null });
+  setFocusLocal(key ?? null);
+}
+
+/** GM: release the focus and the active speaker on every stage (nobody is dimmed). */
+export function broadcastRelease() {
+  if (!game.user.isGM) return ui.notifications.warn(L("Stage.GMOnly"));
+  socket.broadcast("release", {});
+  releaseLocal();
 }
 
 /**

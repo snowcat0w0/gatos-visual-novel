@@ -71,6 +71,29 @@ export function registerSettings() {
     },
     exportStands: { scope: "world", type: Boolean, default: true },
 
+    // ---- Cast (fixed performers). String onChange = module hook `gatos-visual-novel.<name>` (stage.js listens).
+    // PC cast: { slots: [{ actorId, visible, mirror } | null] } (6 seats). NPC casts live in scene flags.
+    pcCast: { hidden: true, scope: "world", type: Object, default: { slots: [] }, onChange: "castChanged" },
+    npcCastMax: { scope: "world", type: Number, default: 4, range: { min: 1, max: 6, step: 1 }, onChange: "castChanged" },
+    // Free stand positions per seat: { [slotId]: { x, y, h, a } } (scenes may override per seat in a flag).
+    castLayout: { hidden: true, scope: "world", type: Object, default: {}, onChange: "castChanged" },
+    castAutoFit: { scope: "world", type: Boolean, default: true, onChange: "castChanged" },
+    castHud: { scope: "world", type: Boolean, default: true, onChange: "castChanged" },
+    npcHud: { scope: "world", type: String, choices: ["gm", "off"], default: "gm", onChange: "castChanged" },
+    avHighlight: { scope: "client", type: Boolean, default: true, onChange: "castChanged" },
+    bubbleMode: { scope: "world", type: String, choices: ["off", "both", "bubble"], default: "off", onChange: "castChanged" },
+
+    // ---- Scene media (GM window "장면 연출"); the media itself lives in scene flags and tiles.
+    mediaHideGrid: { scope: "client", type: Boolean, default: true, onChange: "mediaChrome" },
+
+    // ---- GM tools
+    showQuickbar: { scope: "client", type: Boolean, default: true, onChange: "quickbar" },
+    quickbarPlacement: { hidden: true, scope: "client", type: Object, default: {} },
+    itemFavorites: { hidden: true, scope: "client", type: Array, default: [], onChange: "favorites" },
+    // Window positions of the GM palettes (gatos-lib persistPosition).
+    itemPalettePosition: { hidden: true, scope: "client", type: Object, default: {} },
+    npcPalettePosition: { hidden: true, scope: "client", type: Object, default: {} },
+
     // Keyword registry: { list: [{ keyword, uuid, addedBy }] }
     keywords: { hidden: true, scope: "world", type: Object, default: { list: [] }, onChange: () => onKeywordsChanged() },
     // When the GM last emptied every stage; rebuilds ignore older messages.

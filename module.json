@@ -1,8 +1,8 @@
 {
   "id": "gatos-visual-novel",
   "title": "Gato's Visual Novel",
-  "description": "액터별 표정/스탠딩 이미지와 비주얼 노벨식 노벨창(대사창·스탠딩 최대 6명), 키워드 문서 링크와 참조 이미지, 아카이브·내보내기 연동. Gato's Chat Tools 필요. 시스템 무관.",
-  "version": "0.4.0",
+  "description": "액터별 표정/스탠딩 이미지와 비주얼 노벨식 노벨창(대사창·스탠딩 최대 6명), 고정 출연진·자유 배치·말풍선·음성 강조, 장면 연출(배경 타일·장소 프리셋)과 GM 퀵바·아이템/NPC 팔레트, 키워드 문서 링크와 참조 이미지, 아카이브·내보내기 연동. Gato's Chat Tools 필요. 시스템 무관.",
+  "version": "0.6.0",
   "authors": [
     {
       "name": "jesun"
@@ -10,7 +10,7 @@
   ],
   "url": "https://github.com/snowcat0w0/gatos-visual-novel",
   "manifest": "https://raw.githubusercontent.com/snowcat0w0/gatos-visual-novel/master/module.json",
-  "download": "https://github.com/snowcat0w0/gatos-visual-novel/releases/download/v0.4.0/gatos-visual-novel.zip",
+  "download": "https://github.com/snowcat0w0/gatos-visual-novel/releases/download/v0.6.0/gatos-visual-novel.zip",
   "compatibility": {
     "minimum": "13",
     "verified": "13"

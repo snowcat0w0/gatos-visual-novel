@@ -302,6 +302,43 @@
         "Name": "Novel stage display (personal)",
         "Label": "My display",
         "Hint": "Standing height, layout, greying, dialogue opacity, font size and typewriter speed follow the GM's defaults. Override only the ones you want here."
+      },
+      "NpcCastMax": {
+        "Name": "NPC cast per scene",
+        "Hint": "How many NPCs each scene can keep on the stage (1–6)."
+      },
+      "CastAutoFit": {
+        "Name": "Fit stands automatically",
+        "Hint": "Shrinks stands when many are on stage or the screen is narrow so they do not overlap much. Freely placed stands shrink with the screen's aspect ratio."
+      },
+      "CastHud": {
+        "Name": "Cast cards",
+        "Hint": "Shows a stats/items card on PC cast stands (to the GM and the character's owner). A system module fills it through the API; without one nothing is shown."
+      },
+      "NpcHud": {
+        "Name": "NPC cast cards",
+        "Hint": "Whether NPC cast members show their card.",
+        "Gm": "GM only",
+        "Off": "Off"
+      },
+      "AvHighlight": {
+        "Name": "Voice chat highlight",
+        "Hint": "Highlights the stand of a user speaking in Foundry's audio/video chat (their assigned character, else the one PC cast member they own)."
+      },
+      "BubbleMode": {
+        "Name": "Speech bubbles",
+        "Hint": "Also shows a line as a bubble over the speaker's stand. Not for rolls or whispers you cannot see.",
+        "Off": "Off",
+        "Both": "Bubble + dialogue box",
+        "Bubble": "Bubble only (narration keeps the box)"
+      },
+      "MediaHideGrid": {
+        "Name": "Hide grid and border with media",
+        "Hint": "On scenes with scene media, hides the grid and the scene border on your screen."
+      },
+      "ShowQuickbar": {
+        "Name": "Show the scene quickbar (GM)",
+        "Hint": "Shows the GM a small quickbar with location presets and stage tools. The clapperboard in the scene controls toggles it too."
       }
     },
     "Display": {
@@ -313,6 +350,127 @@
       "ResetAll": "Reset all to GM defaults",
       "Save": "Save",
       "Saved": "Saved your novel stage display settings."
+    },
+    "Tools": {
+      "Quickbar": "Show/hide the scene quickbar"
+    },
+    "Cast": {
+      "Title": "Cast",
+      "Intro": "Cast members stay on the novel stage whoever speaks. The PC cast appears in every scene, the NPC cast only in the scene being viewed. A cast member lights up when it speaks; everyone else still enters the stage when speaking, as before.",
+      "PcLegend": "PC cast (every scene, up to 6)",
+      "NpcLegend": "NPC cast (this scene)",
+      "PcSeat": "PC {n}",
+      "NpcSeat": "NPC {n}",
+      "Empty": "— empty —",
+      "MissingActor": "— deleted actor —",
+      "Visible": "Shown",
+      "VisibleHint": "Off keeps the seat but takes the character off the stage; it then enters like any speaker when it talks.",
+      "Mirror": "Mirror",
+      "Clear": "Empty seat",
+      "DropHint": "You can also drop an actor from the Actors directory onto a seat. An actor takes one seat only.",
+      "Saved": "Cast saved.",
+      "WorldActorsOnly": "Only world actors can join the cast. Import it first.",
+      "RemoveFromStage": "Take off the stage",
+      "OpenSheet": "Open sheet"
+    },
+    "Focus": {
+      "Focus": "Focus this character",
+      "Unfocus": "Release focus",
+      "ReleaseAll": "Release focus and speaker highlight"
+    },
+    "Layout": {
+      "Title": "Edit stand layout",
+      "ScopeWorld": "Save for every scene",
+      "ScopeScene": "Save for this scene only",
+      "Reset": "Reset layout",
+      "Done": "Done",
+      "Resize": "Drag up/down to resize"
+    },
+    "Media": {
+      "Title": "Scene Media",
+      "Intro": "Lays a backdrop (whole canvas) and a centre image as tiles. Changing a control previews on your screen only; nothing is saved until you press Apply. The scene's own background is never touched.",
+      "NoScene": "No scene is being viewed.",
+      "Backdrop": "Backdrop (whole canvas)",
+      "Center": "Centre image",
+      "Display": "Display",
+      "Image": "Image/video",
+      "Fit": "Fit",
+      "FitCover": "Cover",
+      "FitContain": "Contain",
+      "Opacity": "Opacity",
+      "Scale": "Size (of the scene)",
+      "Blur": "Blurred copy",
+      "UseBlur": "Use blurred copy",
+      "BakeBlur": "Make blurred copy",
+      "BlurHint": "Writes a blurred WebP of the backdrop once into the world folder (gatos-vn-blur).",
+      "BlurVideo": "Videos cannot get a blurred copy.",
+      "NoUpload": "You lack the file upload permission needed for a blurred copy.",
+      "NoBackdrop": "Pick a backdrop image first.",
+      "BlurBaking": "Making the blurred copy…",
+      "BlurDone": "Blurred copy made. Press Apply to save it.",
+      "BlurLoadFailed": "Could not read the source image (HTTP {status}).",
+      "BlurEncodeFailed": "Could not encode the blurred copy.",
+      "BgColor": "Background colour",
+      "BgColorOn": "Use",
+      "BgColorHint": "Shown around and behind transparent parts of the images. Painted on each screen only; the scene configuration is not changed.",
+      "HideHotbar": "Hide the macro bar",
+      "HideHotbarHint": "Hides everyone's macro bar while this scene has media.",
+      "Presets": "Location presets",
+      "PresetNone": "No presets saved.",
+      "PresetSave": "Save current values as a preset",
+      "PresetName": "Preset name",
+      "PresetUnnamed": "Unnamed location",
+      "PresetApply": "Apply",
+      "PresetLoad": "Load into the editor",
+      "PresetDelete": "Delete preset",
+      "PresetDeleteConfirm": "Delete the preset \"{name}\"?",
+      "PresetEmpty": "There is no image to save.",
+      "PresetApplied": "Location \"{name}\" applied.",
+      "Apply": "Apply",
+      "Applied": "Scene media applied.",
+      "Clear": "Remove media",
+      "ClearConfirm": "Remove this scene's media tiles and settings? Presets and the scene background stay.",
+      "Cleared": "Scene media removed.",
+      "Unapplied": "Changes not applied yet",
+      "SyncFailed": "Could not create the media tiles. See the console."
+    },
+    "Palette": {
+      "ItemTitle": "Item Palette",
+      "NpcTitle": "NPC Palette",
+      "Search": "Search by name",
+      "SourceAll": "All",
+      "SourceFavorites": "Favourites",
+      "SourceWorld": "World",
+      "SourceCompendium": "Compendiums",
+      "AllFolders": "All folders",
+      "World": "World",
+      "Reload": "Reload the list",
+      "ItemHint": "Drop onto a PC cast stand to give that character a copy. Right-click: choose the PC. Double-click: open the sheet.",
+      "NpcHint": "Click to put an actor into this scene's NPC cast or take it out.",
+      "Favorite": "Favourite",
+      "Give": "Give to a PC",
+      "GiveTo": "Recipient",
+      "GiveTitle": "Give {name}",
+      "Given": "Gave {item} to {actor}.",
+      "NoItem": "Item not found.",
+      "NoPc": "There is no PC cast. Set it up in the Cast window first.",
+      "Empty": "Nothing matches.",
+      "More": "{count} more. Narrow the list with the search or a folder.",
+      "IndexFailed": "Could not read the item list.",
+      "InSeat": "Seat {n}",
+      "NpcFull": "Every NPC seat is taken",
+      "ReplaceSeat": "Seat for {name}",
+      "SeatLabel": "Seat {n}: {name}"
+    },
+    "Quickbar": {
+      "Title": "Scene Quickbar",
+      "Collapse": "Collapse/expand",
+      "Hide": "Hide the quickbar (turn it back on in the scene controls)",
+      "NoPresets": "This scene has no location presets. Make them in the Scene Media window.",
+      "ApplyPreset": "Apply \"{name}\"",
+      "Director": "Stand controls (click: focus, right-click: menu)",
+      "Notes": "Notes (Chat Tools)",
+      "Whispers": "Whispers (Chat Tools)"
     }
   }
 }
