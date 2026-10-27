@@ -61,7 +61,16 @@
       "BroadcastOff": "Turned the novel stage off for all users.",
       "ForcedOn": "The GM turned the novel stage on.",
       "ForcedOff": "The GM turned the novel stage off. Use the mask button in the chat controls to show it again.",
-      "GMOnly": "Only a GM can do this."
+      "GMOnly": "Only a GM can do this.",
+      "MenuRemove": "Take stands down…",
+      "RemoveTitle": "Take stands down",
+      "RemoveHint": "Takes the checked stands off everyone's stage. A cast member is hidden (PC) or has its seat emptied (NPC); restore it in the cast settings. A character comes back when it speaks again.",
+      "RemoveEmpty": "Nobody is on the stage right now.",
+      "RemoveConfirm": "Take selected down",
+      "RemoveAll": "Take everyone down",
+      "RemoveCancel": "Cancel",
+      "RemoveCastPc": "PC cast",
+      "RemoveCastNpc": "NPC cast"
     },
     "Link": {
       "NotFound": "Could not link: {keywords} (no such document or not enough permission)",

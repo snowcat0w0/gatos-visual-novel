@@ -61,7 +61,16 @@
       "BroadcastOff": "모든 사용자의 노벨창을 껐습니다.",
       "ForcedOn": "GM이 노벨창을 켰습니다.",
       "ForcedOff": "GM이 노벨창을 껐습니다. 채팅 메뉴의 가면 버튼으로 다시 켤 수 있습니다.",
-      "GMOnly": "GM만 할 수 있습니다."
+      "GMOnly": "GM만 할 수 있습니다.",
+      "MenuRemove": "스탠딩 내리기…",
+      "RemoveTitle": "스탠딩 내리기",
+      "RemoveHint": "체크한 스탠딩을 모두의 무대에서 내려요. 출연진은 PC면 숨기고 NPC면 자리를 비워요(출연진 설정에서 되돌려요). 내린 캐릭터가 다시 말하면 올라와요.",
+      "RemoveEmpty": "지금 무대에 스탠딩이 없어요.",
+      "RemoveConfirm": "선택한 스탠딩 내리기",
+      "RemoveAll": "모두 내리기",
+      "RemoveCancel": "취소",
+      "RemoveCastPc": "PC 출연진",
+      "RemoveCastNpc": "NPC 출연진"
     },
     "Link": {
       "NotFound": "링크를 걸 수 없는 키워드: {keywords} (문서가 없거나 권한이 부족합니다)",
