@@ -50,6 +50,9 @@
 .gvn-stand.active { z-index: 2; }
 .gvn-stand.entering { opacity: 0; transform: translateX(-50%) translateY(4%); }
 .gvn-stand.leaving { opacity: 0; transition-duration: 0.2s; }
+/* Foundry 13 core styles every `figure img` (@layer elements.media): 1px border, `box-shadow: 0 0 4px #000`,
+   `margin: 0 auto`, `clear: both`. Unlayered module rules win only for the properties they declare, so every one
+   of those is reset here or the stand gets a dark band around its rectangle (seen with the double-cross-3rd system). */
 .gvn-stand-img {
   position: absolute;
   bottom: 0;
@@ -57,9 +60,16 @@
   height: 100%;
   width: auto;
   max-width: none;
+  margin: 0;
+  padding: 0;
+  clear: none;
   transform: translateX(-50%);
   object-fit: contain;
   border: none;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: none;
   opacity: 0;
   transition: opacity 0.2s ease, filter 0.25s ease;
   user-select: none;
@@ -368,7 +378,7 @@ body.gvn-hide-hotbar #hotbar { display: none !important; }
 .gvn-ref-tab.active { border-color: var(--gvn-accent); }
 
 /* ---------- Log player ---------- */
-#gvn-stage.gvn-playing .gvn-tool-clear { display: none; }
+#gvn-stage.gvn-playing .gvn-tool-clear, #gvn-stage.gvn-playing .gvn-tool-remove { display: none; }
 #gvn-stage.gvn-playing .gvn-tool-close { display: inline-block; }
 #gvn-stage.gvn-playing .gvn-ref { top: calc(6% + 40px); max-height: calc(58% - 40px); }
 .gvn-player-bar {
@@ -524,7 +534,8 @@ a.content-link.gvn-ref-link.gvn-ref-locked { opacity: 0.7; }
 .gvn-ec-edit .form-fields button.icon { flex: 0 0 28px; }
 .gvn-ec-edit .hint { margin: 0; font-size: 11px; }
 .gvn-ec-preview { display: flex; gap: 12px; align-items: flex-end; justify-content: center; padding: 6px; background: rgba(0, 0, 0, 0.15); border-radius: 6px; }
-.gvn-ec-preview figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; font-size: 12px; }
+.gvn-ec-preview figure { margin: 0; width: auto; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; font-size: 12px; }
+.gvn-ec-preview figure img { margin: 0; clear: none; box-shadow: none; }
 .gvn-ec-face img, .gvn-ec-face .empty { width: 96px; height: 96px; object-fit: cover; object-position: top; border: 1px solid rgba(128, 128, 128, 0.5); border-radius: 6px; }
 .gvn-ec-stand-frame { width: 140px; height: 210px; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; border: 1px solid rgba(128, 128, 128, 0.5); border-radius: 6px; background: rgba(0, 0, 0, 0.25); }
 .gvn-ec-stand-frame img { width: auto; max-width: none; object-fit: contain; border: none; }
@@ -555,7 +566,7 @@ a.content-link.gvn-ref-link.gvn-ref-locked { opacity: 0.7; }
 /* ---------- Background (edited logs / log player) ---------- */
 .gvn-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 .gvn-bg[hidden] { display: none; }
-.gvn-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border: none; opacity: 0; transition: opacity 0.45s ease; user-select: none; }
+.gvn-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; object-fit: cover; border: none; box-shadow: none; opacity: 0; transition: opacity 0.45s ease; user-select: none; }
 .gvn-bg-img.front { opacity: 1; }
 #gvn-stage.gvn-no-anim .gvn-bg-img { transition: none !important; }
 
@@ -730,6 +741,16 @@ a.content-link.gvn-ref-link.gvn-ref-locked { opacity: 0.7; }
 .gvn-qb-preset { max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-color: rgba(227, 194, 122, 0.5) !important; }
 .gvn-qb-tool { min-width: 30px; }
 .gvn-qb-tool.active { border-color: #e3c27a !important; color: #e3c27a !important; background: rgba(227, 194, 122, 0.15) !important; }
+
+/* ---------- Take stands down (GM dialog) ---------- */
+.gvn-remove-dialog .gvn-rm .hint { margin: 0 0 6px; font-size: 12px; }
+.gvn-rm-list { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.gvn-rm-row { display: flex; align-items: center; gap: 8px; padding: 3px 6px; border-radius: 4px; cursor: pointer; }
+.gvn-rm-row:hover { background: rgba(128, 128, 128, 0.15); }
+.gvn-rm-row input { flex: 0 0 auto; margin: 0; }
+.gvn-rm-img { flex: 0 0 32px; width: 32px; height: 32px; object-fit: cover; object-position: top; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 4px; box-shadow: none; }
+.gvn-rm-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gvn-rm-badge { flex: 0 0 auto; font-size: 10px; padding: 0 5px; border: 1px solid #c9a84c; border-radius: 8px; }
 
 /* ---------- Cast config ---------- */
 .gvn-cast-config .window-content { padding: 0; }
