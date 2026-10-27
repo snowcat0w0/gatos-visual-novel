@@ -1,5 +1,5 @@
 import { L, mod } from "./constants.js";
-import { pure, patchPrototypeOnce, wrapPrototypeMethod, impl } from "./lib.js";
+import { pure, impl } from "./lib.js";
 import { setting } from "./settings.js";
 import { ContextMenu } from "./compat.js";
 import { castMembers, memberByKey, castStats, castItems, toggleMirror, removeMember, giveItemTo, saveLayout, resetLayout } from "./cast.js";
@@ -12,7 +12,7 @@ import { toggleQuickbar, refreshQuickbar } from "./quickbar.js";
 
 /**
  * Live-stage extras drawn on top of StageDOM (which stays pure for the exported player):
- * cast card HUDs, speech bubbles, A/V speaking highlight, GM director mode (click = focus, right-click = menu),
+ * cast card HUDs, speech bubbles, GM director mode (click = focus, right-click = menu),
  * the layout editor (drag / resize cast stands) and item drops onto PC stands.
  */
 
@@ -69,7 +69,6 @@ export function decorate(root, state) {
     renderHandles(fig, m);
   }
   renderBubble(root, state);
-  applyVoice(root);
   renderLayoutBar(root);
 }
 
@@ -78,7 +77,6 @@ export function clearDecorations(root) {
   if (!root) return;
   root.querySelectorAll(".gvn-hud, .gvn-bubble, .gvn-stand-handle, .gvn-layout-bar").forEach((e) => e.remove());
   root.classList.remove("gvn-director", "gvn-layout-edit", "gvn-bubble-only");
-  for (const fig of root._gvn?.figures?.values() ?? []) fig.classList.remove("gvn-voice");
   bubbleKey = null;
 }
 
@@ -208,74 +206,6 @@ function renderBubble(root, state) {
 }
 
 const truncate = (s) => (s.length > BUBBLE_MAX ? `${s.slice(0, BUBBLE_MAX - 1)}…` : s);
-
-/* ---------- A/V speaking ---------- */
-
-const speakingKeys = new Set();
-const stopTimers = new Map();
-const STOP_DELAY = 450;
-
-/** Stand key of a user's character: the assigned character, else the only PC cast actor the user owns. */
-function keyForUser(userId) {
-  const user = game.users?.get(userId);
-  if (!user) return null;
-  if (user.character) return `Actor.${user.character.id}`;
-  if (user.isGM) return null;
-  const owned = castMembers().filter((m) => m.group === "pc" && m.actor.testUserPermission(user, "OWNER"));
-  return owned.length === 1 ? owned[0].key : null;
-}
-
-function applyVoice(root) {
-  if (!root?._gvn || isPlaying()) return;
-  const on = !!setting("avHighlight");
-  for (const [key, fig] of root._gvn.figures) fig.classList.toggle("gvn-voice", on && speakingKeys.has(key));
-}
-
-/** A/V reported a user (not) speaking. Starts apply at once; stops after a short delay (no flicker between words). */
-export function onUserSpeaking(userId, speaking) {
-  const key = keyForUser(userId);
-  if (!key) return;
-  clearTimeout(stopTimers.get(key));
-  stopTimers.delete(key);
-  if (speaking) {
-    if (speakingKeys.has(key)) return;
-    speakingKeys.add(key);
-    applyVoice(getRoot());
-    return;
-  }
-  stopTimers.set(
-    key,
-    setTimeout(() => {
-      stopTimers.delete(key);
-      speakingKeys.delete(key);
-      applyVoice(getRoot());
-    }, STOP_DELAY),
-  );
-}
-
-/**
- * v13 has no speaking hook: both the local voice detection (AVMaster) and remote activity
- * (AVSettings#handleUserActivity) end in CameraViews#setUserIsSpeaking(userId, speaking)
- * (client/av/master.mjs, client/av/settings.mjs, client/applications/apps/av/cameras.mjs), so wrap that.
- */
-export function registerVoiceHighlight() {
-  const handler = function (wrapped, userId, speaking) {
-    const result = wrapped(userId, speaking);
-    try {
-      onUserSpeaking(userId, !!speaking);
-    } catch (err) {
-      mod.warn("speaking highlight failed", err);
-    }
-    return result;
-  };
-  if (ui.webrtc) patchPrototypeOnce(mod, ui.webrtc, "setUserIsSpeaking", handler);
-  else {
-    const proto = foundry.applications.apps?.av?.CameraViews?.prototype;
-    if (proto) wrapPrototypeMethod(mod, proto, "setUserIsSpeaking", handler);
-  }
-  // Users already speaking when we load.
-  for (const [userId, activity] of Object.entries(game.webrtc?.settings?.activity ?? {})) if (activity?.speaking) onUserSpeaking(userId, true);
-}
 
 /* -------------------------------------------- */
 /*  Director: focus and stand menu              */

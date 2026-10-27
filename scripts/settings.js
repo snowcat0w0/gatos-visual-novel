@@ -80,7 +80,6 @@ export function registerSettings() {
     castAutoFit: { scope: "world", type: Boolean, default: true, onChange: "castChanged" },
     castHud: { scope: "world", type: Boolean, default: true, onChange: "castChanged" },
     npcHud: { scope: "world", type: String, choices: ["gm", "off"], default: "gm", onChange: "castChanged" },
-    avHighlight: { scope: "client", type: Boolean, default: true, onChange: "castChanged" },
     bubbleMode: { scope: "world", type: String, choices: ["off", "both", "bubble"], default: "off", onChange: "castChanged" },
 
     // ---- Scene media (GM window "장면 연출"); the media itself lives in scene flags and tiles.
