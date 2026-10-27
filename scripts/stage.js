@@ -11,7 +11,7 @@ import { broadcastStage, broadcastRemove, broadcastRelease, clearAll } from "./s
 import { openKeywordManager } from "./keyword-manager.js";
 import { openLogPlayer } from "./log-player.js";
 import { castMembers, castKeys, currentLook, getLayout, actorKey } from "./cast.js";
-import { decorate, clearDecorations, setupStageInteractions, onStandClick, gmToolMenuItems } from "./stage-extras.js";
+import { decorate, clearDecorations, setupStageInteractions, onStandClick, gmToolMenuItems, openRemoveStands } from "./stage-extras.js";
 
 let root = null;
 let state = StageState.createState(StageState.MAX_SLOTS);
@@ -66,6 +66,7 @@ export function mountStage() {
   }
   const { parent } = mountPoint();
   const tools = [];
+  if (game.user.isGM) tools.push({ action: "remove", icon: "fa-solid fa-person-walking-arrow-right", title: L("Stage.RemoveTitle") });
   if (game.user.isGM) tools.push({ action: "clear", icon: "fa-solid fa-broom", title: L("Stage.ClearAll") });
   tools.push({ action: "close", icon: "fa-solid fa-xmark", title: L("Stage.Close") });
   root = StageDOM.buildStage(document, { id: "gvn-stage", tools, labels: { collapse: L("Stage.Collapse"), expand: L("Stage.Expand") } });
@@ -104,6 +105,7 @@ function onAction(action) {
     return game.settings.set(MODULE_ID, "stageEnabled", false);
   }
   if (action === "clear") return clearAll();
+  if (action === "remove") return openRemoveStands();
 }
 
 /**
@@ -145,7 +147,8 @@ function renderOpts(animate, { live = true } = {}) {
     onRefClick: (ref) => openRef(ref),
     onAction,
     onStandContext: (key) => {
-      // Alt + right-click (GM): take the stand off every stage. Other right-clicks open the stand menu (stage-extras).
+      // Alt + right-click (GM): take the stand off every stage (cast members included). Other right-clicks open
+      // the stand menu (stage-extras).
       if (game.user.isGM && document.body.classList.contains("gvn-alt")) broadcastRemove(key);
     },
     labels: { locked: L("Link.Locked") },
@@ -330,6 +333,7 @@ export function rebuild() {
     const opts = reducerOpts();
     for (const m of messages) next = StageState.apply(next, describe(m), opts);
     next = pruneIdle(next);
+    next = applyRemovals(next);
     const id = next.dialogue?.messageId;
     const msg = id ? game.messages.get(id) : null;
     if (msg) next = StageState.patchDialogue(next, id, { html: await dialogueHtml(msg) });
@@ -357,6 +361,31 @@ function pruneIdle(s) {
   const minutes = setting("idleMinutes");
   if (!minutes) return s;
   return StageState.removeIdle(s, Date.now() - minutes * 60000);
+}
+
+/** Stands the GM took down stay down on a rebuild until their speaker's next line (world setting `removedStands`). */
+function applyRemovals(s) {
+  const removed = setting("removedStands");
+  if (!removed || typeof removed !== "object") return s;
+  let out = s;
+  for (const slot of s.slots) {
+    if (slot && Number(removed[slot.key]) >= (slot.lastTs ?? 0)) out = StageState.remove(out, slot.key);
+  }
+  return out;
+}
+
+const REMOVALS_KEPT = 50;
+
+/** GM: record that `key` was taken down now (socket.js broadcastRemove). Entries before the last "clear all" are dropped. */
+export async function rememberRemoval(key) {
+  if (!game.user.isGM || !key) return;
+  const clearedAt = setting("stageClearedAt") || 0;
+  const raw = setting("removedStands");
+  const kept = Object.entries(raw && typeof raw === "object" ? raw : {})
+    .filter(([k, ts]) => k !== key && Number(ts) > clearedAt)
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .slice(0, REMOVALS_KEPT - 1);
+  return game.settings.set(MODULE_ID, "removedStands", Object.fromEntries([[key, Date.now()], ...kept]));
 }
 
 function startIdleTimer() {
@@ -429,6 +458,7 @@ function menuItems() {
     ...gmToolMenuItems(),
     { name: "GVN.Stage.MenuAllOn", icon: '<i class="fa-solid fa-eye"></i>', condition: gm, callback: () => broadcastStage(true) },
     { name: "GVN.Stage.MenuAllOff", icon: '<i class="fa-solid fa-eye-slash"></i>', condition: gm, callback: () => broadcastStage(false) },
+    { name: "GVN.Stage.MenuRemove", icon: '<i class="fa-solid fa-person-walking-arrow-right"></i>', condition: gm, callback: () => openRemoveStands() },
     { name: "GVN.Stage.MenuClearAll", icon: '<i class="fa-solid fa-broom"></i>', condition: gm, callback: () => clearAll() },
     { name: "GVN.Focus.ReleaseAll", icon: '<i class="fa-solid fa-hand"></i>', condition: gm, callback: () => broadcastRelease() },
     { name: "GVN.Stage.MenuRebuild", icon: '<i class="fa-solid fa-rotate"></i>', callback: () => rebuild() },

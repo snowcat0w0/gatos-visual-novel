@@ -97,6 +97,9 @@ export function registerSettings() {
     keywords: { hidden: true, scope: "world", type: Object, default: { list: [] }, onChange: () => onKeywordsChanged() },
     // When the GM last emptied every stage; rebuilds ignore older messages.
     stageClearedAt: { hidden: true, scope: "world", type: Number, default: 0, onChange: () => clearLocal() },
+    // Stands the GM took down: { [key]: timestamp }. Rebuilds (reloads, late joiners) keep a stand down until it
+    // speaks again after that time. Live removal travels over the socket; no onChange needed.
+    removedStands: { hidden: true, scope: "world", type: Object, default: {} },
   });
 }
 

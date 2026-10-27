@@ -1,7 +1,8 @@
 import { MODULE_ID, L, mod } from "./constants.js";
 import { createSocket } from "./lib.js";
 import { applyKeywordOp } from "./links.js";
-import { removeStandLocal, setFocusLocal, releaseLocal } from "./stage.js";
+import { removeStandLocal, setFocusLocal, releaseLocal, rememberRemoval } from "./stage.js";
+import { memberByKey, removeMember } from "./cast.js";
 
 /**
  * gatos-lib socket on `module.gatos-visual-novel`. Broadcasts ("stage", "remove") reach every other client and
@@ -67,11 +68,18 @@ export async function clearAll() {
   await game.settings.set(MODULE_ID, "stageClearedAt", Date.now());
 }
 
-/** GM: take one stand off every stage. */
-export function broadcastRemove(key) {
-  if (!game.user.isGM) return;
+/**
+ * GM: take one stand off every stage, whoever it is. A cast member is taken off through its seat (PC: hidden,
+ * NPC: seat emptied; every client reads the same documents); a chat-driven stand goes over the socket and is
+ * remembered so reloads and late joiners keep it down until that speaker talks again.
+ */
+export async function broadcastRemove(key) {
+  if (!game.user.isGM || !key) return;
+  const member = memberByKey(key);
+  if (member) return removeMember(member);
   socket.broadcast("remove", { key });
   removeStandLocal(key);
+  await rememberRemoval(key);
 }
 
 /** GM: focus one stand on every stage (null clears the focus). */

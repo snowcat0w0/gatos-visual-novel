@@ -4,7 +4,7 @@ import { setting } from "./settings.js";
 import { getPresets, applyPreset, openSceneMedia } from "./scene-media.js";
 import { openCastConfig } from "./cast-config.js";
 import { openItemPalette, openNpcPalette } from "./palettes.js";
-import { isDirector, toggleDirector, isLayoutEditing, toggleLayoutEditing } from "./stage-extras.js";
+import { isDirector, toggleDirector, isLayoutEditing, toggleLayoutEditing, openRemoveStands } from "./stage-extras.js";
 import { broadcastRelease } from "./socket.js";
 
 /**
@@ -30,6 +30,7 @@ const TOOLS = [
   { id: "director", icon: "fa-solid fa-hand-pointer", label: "Quickbar.Director", run: () => toggleDirector(), active: () => isDirector() },
   { id: "layout", icon: "fa-solid fa-up-down-left-right", label: "Layout.Title", run: () => toggleLayoutEditing(), active: () => isLayoutEditing() },
   { id: "release", icon: "fa-solid fa-hand", label: "Focus.ReleaseAll", run: () => broadcastRelease() },
+  { id: "remove", icon: "fa-solid fa-person-walking-arrow-right", label: "Stage.RemoveTitle", run: () => openRemoveStands() },
   { id: "notes", icon: "fa-solid fa-note-sticky", label: "Quickbar.Notes", run: () => chatToolsPanel("notes")?.(), visible: () => !!chatToolsPanel("notes") },
   { id: "whispers", icon: "fa-solid fa-user-secret", label: "Quickbar.Whispers", run: () => chatToolsPanel("whispers")?.(), visible: () => !!chatToolsPanel("whispers") },
 ];

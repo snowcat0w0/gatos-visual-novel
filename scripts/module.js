@@ -61,7 +61,7 @@ import {
 } from "./scene-media.js";
 import { registerPaletteHooks, openItemPalette, openNpcPalette, toggleNpc } from "./palettes.js";
 import { registerQuickbarHooks, renderQuickbar, toggleQuickbar } from "./quickbar.js";
-import { setDirector, toggleDirector, setLayoutEditing, toggleLayoutEditing } from "./stage-extras.js";
+import { setDirector, toggleDirector, setLayoutEditing, toggleLayoutEditing, openRemoveStands } from "./stage-extras.js";
 
 Hooks.once("init", () => {
   // Installed-but-disabled library = "half state" (gatos-lib PLAN §5.6): code imports fine, but the library's
@@ -99,6 +99,7 @@ Hooks.once("init", () => {
       toggle,
       clear: clearAll,
       remove: (key) => (game.user.isGM ? broadcastRemove(key) : removeStandLocal(key)),
+      openRemove: openRemoveStands,
       getState,
       rebuild,
     },

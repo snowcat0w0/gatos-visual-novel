@@ -1,8 +1,8 @@
 import { L, mod } from "./constants.js";
-import { pure, impl } from "./lib.js";
+import { pure, impl, esc, formDialog } from "./lib.js";
 import { setting } from "./settings.js";
 import { ContextMenu } from "./compat.js";
-import { castMembers, memberByKey, castStats, castItems, toggleMirror, removeMember, giveItemTo, saveLayout, resetLayout } from "./cast.js";
+import { castMembers, memberByKey, castStats, castItems, toggleMirror, giveItemTo, saveLayout, resetLayout } from "./cast.js";
 import { broadcastFocus, broadcastRelease, broadcastRemove } from "./socket.js";
 import { getRoot, liveState, scheduleDraw, isPlaying } from "./stage.js";
 import { openCastConfig } from "./cast-config.js";
@@ -236,15 +236,7 @@ function standMenuItems() {
     { name: "GVN.Focus.Focus", icon: '<i class="fa-solid fa-bullseye"></i>', condition: (li) => liveState().focusKey !== keyOf(li), callback: (li) => broadcastFocus(keyOf(li)) },
     { name: "GVN.Focus.Unfocus", icon: '<i class="fa-regular fa-circle"></i>', condition: (li) => liveState().focusKey === keyOf(li), callback: () => broadcastFocus(null) },
     { name: "GVN.Cast.Mirror", icon: '<i class="fa-solid fa-left-right"></i>', condition: (li) => !!member(li), callback: (li) => toggleMirror(member(li)) },
-    {
-      name: "GVN.Cast.RemoveFromStage",
-      icon: '<i class="fa-solid fa-person-walking-arrow-right"></i>',
-      callback: (li) => {
-        const m = member(li);
-        if (m) return removeMember(m);
-        broadcastRemove(keyOf(li));
-      },
-    },
+    { name: "GVN.Cast.RemoveFromStage", icon: '<i class="fa-solid fa-person-walking-arrow-right"></i>', callback: (li) => broadcastRemove(keyOf(li)) },
     {
       name: "GVN.Cast.OpenSheet",
       icon: '<i class="fa-solid fa-id-card"></i>',
@@ -252,6 +244,55 @@ function standMenuItems() {
       callback: (li) => actorOfKey(keyOf(li))?.sheet?.render({ force: true }),
     },
   ];
+}
+
+/* -------------------------------------------- */
+/*  Take stands down (GM)                       */
+/* -------------------------------------------- */
+
+/** What stands on this client's stage right now: chat-driven stands and visible cast members alike. */
+function standsOnStage() {
+  const root = getRoot();
+  const rows = [];
+  for (const [key, fig] of root?._gvn?.figures ?? []) {
+    if (fig.classList.contains("leaving")) continue;
+    const m = memberByKey(key);
+    rows.push({ key, name: fig.dataset.name || m?.actor?.name || key, group: m?.group ?? null, img: fig.dataset.src || null });
+  }
+  return rows;
+}
+
+/**
+ * GM: pick any stands and take them off everyone's stage (dialogue toolbar, quickbar, mask menu, API).
+ * Cast members are taken off through their seat (PC: hidden, NPC: seat emptied), others through broadcastRemove.
+ */
+export async function openRemoveStands() {
+  if (!game.user.isGM) return mod.notify.warn("Stage.GMOnly");
+  if (isPlaying()) return;
+  const rows = standsOnStage();
+  if (!rows.length) return mod.notify.info("Stage.RemoveEmpty");
+  const badge = (g) => (g ? `<span class="gvn-rm-badge">${esc(L(g === "pc" ? "Stage.RemoveCastPc" : "Stage.RemoveCastNpc"))}</span>` : "");
+  const items = rows
+    .map(
+      (r) => `<li><label class="gvn-rm-row"><input type="checkbox" name="key" value="${esc(r.key)}">${
+        r.img ? `<img class="gvn-rm-img" src="${esc(r.img)}" alt="">` : '<span class="gvn-rm-img"></span>'
+      }<span class="gvn-rm-name">${esc(r.name)}</span>${badge(r.group)}</label></li>`,
+    )
+    .join("");
+  const content = `<div class="gvn-rm"><p class="hint">${esc(L("Stage.RemoveHint"))}</p><ul class="gvn-rm-list">${items}</ul></div>`;
+  const checked = (button) => Array.from((button.closest("form") ?? button.form)?.querySelectorAll("input[name=key]:checked") ?? []).map((i) => i.value);
+  const keys = await formDialog({
+    title: L("Stage.RemoveTitle"),
+    icon: "fa-solid fa-person-walking-arrow-right",
+    classes: ["gvn-remove-dialog"],
+    width: 380,
+    content,
+    ok: { action: "remove", label: L("Stage.RemoveConfirm"), icon: "fa-solid fa-person-walking-arrow-right", read: checked },
+    buttons: [{ action: "all", label: L("Stage.RemoveAll"), icon: "fa-solid fa-check-double", callback: () => rows.map((r) => r.key) }],
+    cancel: { label: L("Stage.RemoveCancel") },
+  });
+  if (!Array.isArray(keys) || !keys.length) return;
+  for (const key of keys) await broadcastRemove(key);
 }
 
 /* -------------------------------------------- */
