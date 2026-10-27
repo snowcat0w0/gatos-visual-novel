@@ -321,10 +321,6 @@
         "Gm": "GM only",
         "Off": "Off"
       },
-      "AvHighlight": {
-        "Name": "Voice chat highlight",
-        "Hint": "Highlights the stand of a user speaking in Foundry's audio/video chat (their assigned character, else the one PC cast member they own)."
-      },
       "BubbleMode": {
         "Name": "Speech bubbles",
         "Hint": "Also shows a line as a bubble over the speaker's stand. Not for rolls or whispers you cannot see.",
