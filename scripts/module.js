@@ -1,6 +1,6 @@
 import { MODULE_ID, TEMPLATES, L, mod, chatTools, chatToolsHooksAvailable } from "./constants.js";
 import { libActive, addSceneControlTool } from "./lib.js";
-import { registerSettings } from "./settings.js";
+import { registerSettings, setting } from "./settings.js";
 import * as StageState from "./stage-state.js";
 import * as StageDOM from "./stage-dom.js";
 import {
@@ -15,6 +15,7 @@ import {
 } from "./expressions.js";
 import { openExpressionConfig, registerExpressionConfigHooks } from "./expression-config.js";
 import { registerPickerHooks } from "./expression-picker.js";
+import { registerStageButtonHooks } from "./stage-button.js";
 import { registerStageHooks, startStage, enable, disable, toggle, rebuild, getState, removeStandLocal } from "./stage.js";
 import { toEntry, describe } from "./entries.js";
 import {
@@ -26,7 +27,7 @@ import {
   openRef,
 } from "./links.js";
 import { openKeywordManager } from "./keyword-manager.js";
-import { registerSocket, broadcastStage, broadcastRemove, broadcastFocus, broadcastRelease, clearAll } from "./socket.js";
+import { registerSocket, broadcastStage, broadcastRemove, broadcastRaise, broadcastFocus, broadcastRelease, clearAll } from "./socket.js";
 import { registerArchiveHooks, preloadPlayerAssets } from "./archive-ext.js";
 import * as PlayerCore from "./player-core.js";
 import { openLogPlayer, playMessages, playSource, loadSource, stopPlayback, isPlaying } from "./log-player.js";
@@ -99,6 +100,7 @@ Hooks.once("init", () => {
       toggle,
       clear: clearAll,
       remove: (key) => (game.user.isGM ? broadcastRemove(key) : removeStandLocal(key)),
+      raise: (actor) => broadcastRaise({ actor }),
       openRemove: openRemoveStands,
       getState,
       rebuild,
@@ -146,9 +148,14 @@ Hooks.once("init", () => {
   Hooks.on("preUpdateChatMessage", onPreUpdateChatMessageLinks);
   Hooks.on("preUpdateChatMessage", onPreUpdateExpression);
   Hooks.on("renderChatMessageHTML", onRenderChatMessageLinks);
+  // chat-tools speaker chip clicked: put that stand up for everyone (only while this user's novel window is on).
+  Hooks.on("gctSpeakerChipActivated", (speaker) => {
+    if (setting("stageEnabled")) broadcastRaise(speaker);
+  });
 
   registerExpressionConfigHooks();
   registerPickerHooks();
+  registerStageButtonHooks();
   registerStageHooks();
   registerArchiveHooks();
   registerSceneMediaHooks();

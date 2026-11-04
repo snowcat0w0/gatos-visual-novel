@@ -1,8 +1,10 @@
 import { MODULE_ID, L, mod } from "./constants.js";
-import { createSocket } from "./lib.js";
+import { createSocket, isActiveGM } from "./lib.js";
 import { applyKeywordOp } from "./links.js";
-import { removeStandLocal, setFocusLocal, releaseLocal, rememberRemoval } from "./stage.js";
-import { memberByKey, removeMember } from "./cast.js";
+import { removeStandLocal, raiseStandLocal, setFocusLocal, releaseLocal, rememberRemoval, rememberRaise } from "./stage.js";
+import { memberByKey, removeMember, actorKey, castKeys } from "./cast.js";
+import { setting } from "./settings.js";
+import { expressionFlagFor, getCurrentExpression } from "./expressions.js";
 
 /**
  * gatos-lib socket on `module.gatos-visual-novel`. Broadcasts ("stage", "remove") reach every other client and
@@ -26,6 +28,39 @@ socket.registerHandler(
   "remove",
   ({ key }, user) => {
     if (user?.isGM) removeStandLocal(key);
+  },
+  { anyClient: true },
+);
+
+/** May `user` put this actor's stand up or take it down from the chat (setting chipRaise: "all" = owners and GMs, "gm" = GMs only)? */
+export function mayRaise(user, actor) {
+  const mode = setting("chipRaise");
+  if (!user || !actor || mode === "off") return false;
+  if (user.isGM) return true;
+  return mode === "all" && actor.testUserPermission(user, "OWNER");
+}
+
+// A stand put up without a line (chat-tools speaker chip). The sender sends the resolved look so every client shows
+// the same expression; the active GM records it for reloads.
+socket.registerHandler(
+  "raise",
+  ({ look }, user) => {
+    const actorId = typeof look?.key === "string" && look.key.startsWith("Actor.") ? look.key.slice(6) : null;
+    if (!mayRaise(user, game.actors.get(actorId))) return;
+    raiseStandLocal(look);
+    if (!user.isGM && isActiveGM()) rememberRaise(look);
+  },
+  { anyClient: true },
+);
+
+// A player takes their own chat-driven stand down (speaker bar stage button); GMs use "remove". Cast seats stay.
+socket.registerHandler(
+  "lower",
+  ({ key }, user) => {
+    const actorId = typeof key === "string" && key.startsWith("Actor.") ? key.slice(6) : null;
+    if (!mayRaise(user, game.actors.get(actorId)) || memberByKey(key)) return;
+    removeStandLocal(key);
+    if (!user.isGM && isActiveGM()) rememberRemoval(key);
   },
   { anyClient: true },
 );
@@ -80,6 +115,37 @@ export async function broadcastRemove(key) {
   socket.broadcast("remove", { key });
   removeStandLocal(key);
   await rememberRemoval(key);
+}
+
+/**
+ * Put an actor's stand up on every stage without a line, with this user's current expression (chat-tools
+ * `gctSpeakerChipActivated`). Cast members already stand; a GM sender records the raise, a player's is recorded by
+ * the active GM. Silently does nothing when the setting does not allow this user.
+ * @param {{actor: Actor, token?: TokenDocument|null, sceneId?: string|null, alias?: string|null}} speaker
+ */
+export async function broadcastRaise({ actor, token = null, sceneId = null, alias = null } = {}) {
+  if (!actor || !mayRaise(game.user, game.actors.get(actor.id))) return;
+  const key = actorKey(actor.id);
+  if (castKeys().has(key)) return;
+  const flag = expressionFlagFor({ actor: actor.id, token: token?.id ?? null, scene: token ? sceneId : null }, getCurrentExpression(actor.id));
+  if (!flag?.stand) return;
+  const look = { key, name: alias || actor.name, stand: flag.stand, standStyle: flag.standStyle ?? null, timestamp: Date.now() };
+  socket.broadcast("raise", { look });
+  raiseStandLocal(look);
+  if (game.user.isGM) await rememberRaise(look);
+}
+
+/**
+ * Take an actor's chat-driven stand off every stage from the speaker bar. A GM goes through broadcastRemove (cast
+ * members included); a player's own stand goes over the socket and the active GM records it.
+ */
+export async function broadcastLower(actor) {
+  if (!actor || !mayRaise(game.user, game.actors.get(actor.id))) return;
+  const key = actorKey(actor.id);
+  if (game.user.isGM) return broadcastRemove(key);
+  if (memberByKey(key)) return;
+  socket.broadcast("lower", { key });
+  removeStandLocal(key);
 }
 
 /** GM: focus one stand on every stage (null clears the focus). */

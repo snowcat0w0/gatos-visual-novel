@@ -150,6 +150,36 @@ export function applyAll(state, entries, opts) {
   return entries.reduce((s, e) => apply(s, e, opts), state);
 }
 
+/**
+ * Put a speaker's stand up without a line (chat-tools speaker chip): seated like a speech line, but the dialogue,
+ * the active speaker and the focus stay as they are. A standing speaker gets the new look and counts as recent.
+ * Pinned (cast) speakers already stand: unchanged.
+ * @param {object} state
+ * @param {{key: string, name?: string, stand: string, standStyle?: object|null, timestamp?: number}} look
+ * @param {object} [opts]  As apply().
+ */
+export function raise(state, look, { maxSlots, slotOrder, pinned } = {}) {
+  if (!look?.key || !look.stand || isPinned(pinned, look.key)) return state;
+  const next = maxSlots && maxSlots !== state.slots.length ? withMaxSlots(state, maxSlots) : state;
+  const order = slotOrder?.length ? slotOrder : centerOutOrder(next.slots.length);
+  const seq = next.seq + 1;
+  const at = next.slots.findIndex((s) => s?.key === look.key);
+  const slots = next.slots.slice();
+  if (at >= 0) {
+    slots[at] = {
+      ...slots[at],
+      name: look.name ?? slots[at].name,
+      stand: look.stand,
+      standStyle: look.standStyle ?? slots[at].standStyle ?? null,
+      lastTs: look.timestamp ?? slots[at].lastTs,
+      lastSeq: seq,
+    };
+  } else {
+    placeIn(slots, { key: look.key, name: look.name ?? "", stand: look.stand, standStyle: look.standStyle ?? null, lastTs: look.timestamp ?? 0, lastSeq: seq, messageId: null }, order);
+  }
+  return { ...next, slots, seq };
+}
+
 /** Remove a speaker's stand from the stage. */
 export function remove(state, key) {
   if (!state.slots.some((s) => s?.key === key)) return state;

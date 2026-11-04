@@ -4,6 +4,14 @@
     "Expression": {
       "Default": "Default"
     },
+    "Picker": {
+      "PortraitTooltip": "Expression: {name} (click to change)",
+      "OpenSheet": "Open sheet"
+    },
+    "StageButton": {
+      "Raise": "Put {name}'s stand up",
+      "Lower": "Take {name}'s stand down"
+    },
     "Source": {
       "Face": "this entry's face",
       "Stand": "this entry's standing image",
@@ -281,9 +289,17 @@
         "Name": "Auto exit (minutes)",
         "Hint": "Remove standing images of speakers silent for this long. 0 disables."
       },
+      "ChipRaise": {
+        "Name": "Put stands up from the chat",
+        "Hint": "A favourite chip or the stage button on the Chat Tools speaker bar puts that character's stand on everyone's stage without a line (with the current expression); the stage button takes it down again. Only for users whose novel window is on. Off also hides the stage button.",
+        "All": "Everyone (players: own characters)",
+        "Gm": "GM only",
+        "Off": "Off"
+      },
       "PickerMode": {
         "Name": "Expression picker",
-        "Hint": "Look of the expression row below the speaker bar.",
+        "Hint": "How expressions are picked. 'Click the face' opens the expression list from the speaker bar's portrait; the others show a separate expression row below the speaker bar.",
+        "Popup": "Click the face",
         "Thumbnails": "Thumbnails",
         "Names": "Names",
         "Dropdown": "Dropdown"
