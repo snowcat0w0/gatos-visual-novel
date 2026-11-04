@@ -1,6 +1,7 @@
 import { MODULE_ID, mod } from "./constants.js";
 import { applyEnabled, applyDisplaySettings, setMaxSlots, rebuild, refreshToggleButtons, clearLocal } from "./stage.js";
 import { refreshPickers } from "./expression-picker.js";
+import { refreshStageButtons } from "./stage-button.js";
 import { onKeywordsChanged } from "./keyword-manager.js";
 import { DisplaySettingsConfig } from "./display-config.js";
 
@@ -53,12 +54,19 @@ export function registerSettings() {
     },
     rebuildCount: { scope: "client", type: Number, default: 40, range: { min: 0, max: 200, step: 10 } },
     idleMinutes: { scope: "world", type: Number, default: 0, range: { min: 0, max: 120, step: 5 } },
+    // Speaker chips and the speaker bar's stage button put stands up without a line: everyone (own actors) / GM only / off.
+    chipRaise: { scope: "world", type: String, choices: ["all", "gm", "off"], default: "all", onChange: () => refreshStageButtons() },
 
     // ---- Expressions
     pickerMode: {
       scope: "client", type: String,
-      choices: { thumbnails: "GVN.Settings.PickerMode.Thumbnails", names: "GVN.Settings.PickerMode.Names", dropdown: "GVN.Settings.PickerMode.Dropdown" },
-      default: "thumbnails", onChange: () => refreshPickers(),
+      choices: {
+        popup: "GVN.Settings.PickerMode.Popup",
+        thumbnails: "GVN.Settings.PickerMode.Thumbnails",
+        names: "GVN.Settings.PickerMode.Names",
+        dropdown: "GVN.Settings.PickerMode.Dropdown",
+      },
+      default: "popup", onChange: () => refreshPickers(),
     },
     inlineTag: { scope: "world", type: Boolean, default: true },
     inlineTagSticky: { scope: "client", type: Boolean, default: false },
@@ -100,6 +108,9 @@ export function registerSettings() {
     // Stands the GM took down: { [key]: timestamp }. Rebuilds (reloads, late joiners) keep a stand down until it
     // speaks again after that time. Live removal travels over the socket; no onChange needed.
     removedStands: { hidden: true, scope: "world", type: Object, default: {} },
+    // Stands put up without a line (speaker chips): { [key]: { ts, name, stand, standStyle } }. Rebuilds replay them
+    // in time order among the messages. Live raises travel over the socket; no onChange needed.
+    raisedStands: { hidden: true, scope: "world", type: Object, default: {} },
   });
 }
 

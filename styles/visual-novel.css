@@ -493,6 +493,65 @@ a.content-link.gvn-ref-link.gvn-ref-locked { opacity: 0.7; }
 .gvn-expr-config { margin-left: auto; padding: 0 4px; font-size: 12px; opacity: 0.6; cursor: pointer; }
 .gvn-expr-config:hover { opacity: 1; }
 
+/* pickerMode "popup": expression name on the speaker bar, menu above its portrait */
+.gct-speaker-bar.gvn-expr-popup .gct-sb-portrait { width: 24px; height: 24px; object-position: top; }
+.gct-speaker-bar.gvn-expr-popup .gct-sb-portrait:hover { border-color: #ffaa00; }
+.gct-speaker-bar .gvn-expr-badge {
+  flex-shrink: 0;
+  max-width: 80px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: rgba(255, 170, 0, 0.18);
+  color: #ffcc66;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gct-speaker-bar .gvn-stage-btn { flex-shrink: 0; padding: 0 3px; opacity: 0.7; cursor: pointer; }
+.gct-speaker-bar .gvn-stage-btn:hover { opacity: 1; color: #ffaa00; }
+.gct-speaker-bar .gvn-stage-btn.active { opacity: 1; color: #ffcc66; }
+.gct-speaker-bar.gct-cc-mode .gvn-stage-btn,
+.gct-speaker-bar.gct-cc-mode .gvn-expr-badge { display: none; }
+.gvn-em-menu {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 280px;
+  max-height: 60vh;
+  padding: 6px;
+  background: var(--color-cool-5, #1f2128);
+  border: 1px solid var(--color-border-light-tertiary, #7a7971);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  color: var(--color-text-light-highlight, #f0f0e0);
+  font-size: var(--font-size-12, 12px);
+}
+.gvn-em-menu .gvn-em-head { font-weight: 700; opacity: 0.8; padding: 0 2px; }
+.gvn-em-menu .gvn-em-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; overflow-y: auto; min-height: 0; }
+.gvn-em-menu .gvn-em-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  height: auto;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: inherit;
+}
+.gvn-em-menu .gvn-em-item img,
+.gvn-em-menu .gvn-em-noimg { width: 52px; height: 52px; object-fit: cover; object-position: top; border: none; border-radius: 3px; background: #000; }
+.gvn-em-menu .gvn-em-noimg { display: flex; align-items: center; justify-content: center; opacity: 0.5; }
+.gvn-em-menu .gvn-em-item span { max-width: 100%; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gvn-em-menu .gvn-em-item:hover { border-color: #ffaa00; }
+.gvn-em-menu .gvn-em-item.active { border-color: var(--color-warm-1, #ff6400); box-shadow: 0 0 4px var(--color-warm-1, #ff6400); }
+.gvn-em-menu .gvn-em-foot { display: flex; gap: 4px; }
+.gvn-em-menu .gvn-em-foot button { flex: 1 1 0; height: 26px; font-size: var(--font-size-12, 12px); }
+
 /* ---------- Expression editor ---------- */
 .gvn-expression-config .window-content { padding: 0; }
 .gvn-ec-root { display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }

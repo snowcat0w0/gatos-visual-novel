@@ -331,7 +331,12 @@ export function rebuild() {
     const messages = count > 0 ? sorted.slice(-count) : [];
     let next = StageState.createState(maxSlots());
     const opts = reducerOpts();
-    for (const m of messages) next = StageState.apply(next, describe(m), opts);
+    // Stands put up without a line replay in time order among the kept messages: none older than the first of them
+    // when older messages were cut off, none at all when nothing is restored.
+    const from = count <= 0 ? Infinity : sorted.length > count ? messages[0].timestamp : -Infinity;
+    const raised = raisedLooks(clearedAt).filter((r) => r.timestamp >= from);
+    const timeline = [...messages.map((m) => ({ ts: m.timestamp, m })), ...raised.map((r) => ({ ts: r.timestamp, r }))].sort((a, b) => a.ts - b.ts);
+    for (const t of timeline) next = t.m ? StageState.apply(next, describe(t.m), opts) : StageState.raise(next, t.r, opts);
     next = pruneIdle(next);
     next = applyRemovals(next);
     const id = next.dialogue?.messageId;
@@ -351,6 +356,11 @@ export function clearLocal() {
 /** Remove one stand on this client. */
 export function removeStandLocal(key) {
   enqueue(() => commit(StageState.remove(state, key)));
+}
+
+/** Put one stand up on this client without a line (look = { key, name, stand, standStyle, timestamp }). */
+export function raiseStandLocal(look) {
+  enqueue(() => commit(StageState.raise(state, look, reducerOpts())));
 }
 
 export function setMaxSlots(n) {
@@ -385,7 +395,36 @@ export async function rememberRemoval(key) {
     .filter(([k, ts]) => k !== key && Number(ts) > clearedAt)
     .sort((a, b) => Number(b[1]) - Number(a[1]))
     .slice(0, REMOVALS_KEPT - 1);
-  return game.settings.set(MODULE_ID, "removedStands", Object.fromEntries([[key, Date.now()], ...kept]));
+  await game.settings.set(MODULE_ID, "removedStands", Object.fromEntries([[key, Date.now()], ...kept]));
+  // A stand taken down no longer needs its "put up" record.
+  if (setting("raisedStands")?.[key]) await writeRaised(key, null);
+}
+
+/** Recorded raises after the last "clear all", as reducer looks. */
+function raisedLooks(clearedAt) {
+  const raw = setting("raisedStands");
+  if (!raw || typeof raw !== "object") return [];
+  return Object.entries(raw)
+    .filter(([, r]) => r?.stand && Number(r.ts) > clearedAt)
+    .map(([key, r]) => ({ key, name: r.name ?? "", stand: r.stand, standStyle: r.standStyle ?? null, timestamp: Number(r.ts) }));
+}
+
+/** Set (record) or drop (null) one key of `raisedStands`; older than the last "clear all" are dropped, 50 kept. */
+async function writeRaised(key, record) {
+  const clearedAt = setting("stageClearedAt") || 0;
+  const raw = setting("raisedStands");
+  const kept = Object.entries(raw && typeof raw === "object" ? raw : {})
+    .filter(([k, r]) => k !== key && Number(r?.ts) > clearedAt)
+    .sort((a, b) => Number(b[1].ts) - Number(a[1].ts))
+    .slice(0, REMOVALS_KEPT - 1);
+  const entries = record ? [[key, record], ...kept] : kept;
+  return game.settings.set(MODULE_ID, "raisedStands", Object.fromEntries(entries));
+}
+
+/** GM: record that a stand was put up now, so reloads and late joiners see it too (socket.js broadcastRaise). */
+export async function rememberRaise(look) {
+  if (!game.user.isGM || !look?.key) return;
+  return writeRaised(look.key, { ts: look.timestamp ?? Date.now(), name: look.name ?? "", stand: look.stand, standStyle: look.standStyle ?? null });
 }
 
 function startIdleTimer() {
