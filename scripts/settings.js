@@ -68,6 +68,8 @@ export function registerSettings() {
       },
       default: "popup", onChange: () => refreshPickers(),
     },
+    // Set once the old saved default "thumbnails" was moved to "popup" (module.js migratePickerMode).
+    pickerModeMigrated: { hidden: true, scope: "client", type: Boolean, default: false },
     inlineTag: { scope: "world", type: Boolean, default: true },
     inlineTagSticky: { scope: "client", type: Boolean, default: false },
 
