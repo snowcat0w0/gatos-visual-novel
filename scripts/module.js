@@ -170,8 +170,19 @@ Hooks.once("init", () => {
   addSceneControlTool({ layer: "tokens", name: "gvnCast", title: "GVN.Cast.Title", icon: "fa-solid fa-users", visible: gm, onClick: () => openCastConfig() });
 });
 
+/**
+ * pickerMode "popup" became the default in 0.6.2 / 0.7.2, but clients that had saved the old default "thumbnails"
+ * kept the row below the speaker bar. Move them to the popup once; choosing "thumbnails" again afterwards sticks.
+ */
+async function migratePickerMode() {
+  if (setting("pickerModeMigrated")) return;
+  if (setting("pickerMode") === "thumbnails") await game.settings.set(MODULE_ID, "pickerMode", "popup");
+  await game.settings.set(MODULE_ID, "pickerModeMigrated", true);
+}
+
 Hooks.once("ready", async () => {
   registerSocket();
+  await migratePickerMode();
   const ct = chatTools();
   if (ct) ct.registerPortraitProvider(portraitProvider);
   else mod.notify.warn("ChatToolsMissing", undefined, { permanent: true });
